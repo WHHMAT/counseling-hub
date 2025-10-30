@@ -3,6 +3,7 @@ import { TOOLS } from './constants';
 import ToolCard from './components/ToolCard';
 import RolePlayingTool from './components/RolePlayingTool';
 import RapportTool from './components/RapportTool';
+import MaslowTool from './components/MaslowTool';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -19,6 +20,8 @@ const App: React.FC = () => {
     return <RolePlayingTool onGoHome={handleGoHome} />;
   } else if (activeTool === 'rapport-pacing') {
     return <RapportTool onGoHome={handleGoHome} />;
+  } else if (activeTool === 'maslow-pyramid') {
+    return <MaslowTool onGoHome={handleGoHome} />;
   }
 
   // Qui potranno essere aggiunti altri strumenti con 'else if'
@@ -36,7 +39,7 @@ const App: React.FC = () => {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {TOOLS.map((tool) => (
             <ToolCard key={tool.id} tool={tool} onStart={handleStartTool} />
           ))}

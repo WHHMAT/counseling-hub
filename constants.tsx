@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon } from './components/icons';
 
 export const TOOLS: Tool[] = [
   {
@@ -16,6 +16,14 @@ export const TOOLS: Tool[] = [
     title: 'Pratica del Rapport',
     description: 'Allenati a costruire il rapport con il cliente attraverso la tecnica del ricalco. Esplora diverse modalità di mirroring per creare una connessione empatica.',
     icon: <LinkIcon />,
+    actionText: 'Inizia Esercizio',
+    comingSoon: false,
+  },
+   {
+    id: 'maslow-pyramid',
+    title: 'Piramide di Maslow',
+    description: "Leggi la storia di un cliente e identifica i suoi bisogni secondo la gerarchia di Maslow. Ricevi un'analisi dettagliata sulla tua valutazione.",
+    icon: <PyramidIcon />,
     actionText: 'Inizia Esercizio',
     comingSoon: false,
   },
