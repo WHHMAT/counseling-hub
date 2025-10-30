@@ -20,6 +20,12 @@
 </script>
 </head>
   <body class="bg-gray-50">
+    <!-- Questo modulo nascosto è necessario affinché Netlify Forms funzioni con React -->
+    <form name="feedback" netlify netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="feedback" />
+      <textarea name="message"></textarea>
+    </form>
+    
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
