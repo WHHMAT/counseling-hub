@@ -5,6 +5,7 @@ import RolePlayingTool from './components/RolePlayingTool';
 import RapportTool from './components/RapportTool';
 import MaslowTool from './components/MaslowTool';
 import VissiTool from './components/VissiTool';
+import FeedbackForm from './components/FeedbackForm';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -48,8 +49,13 @@ const App: React.FC = () => {
             <ToolCard key={tool.id} tool={tool} onStart={handleStartTool} />
           ))}
         </div>
+        
+        <section className="mt-24 max-w-2xl mx-auto">
+            <FeedbackForm />
+        </section>
+
       </main>
-      <footer className="text-center py-8 mt-12">
+      <footer className="text-center py-8">
         <p className="text-gray-500">&copy; {new Date().getFullYear()} Hub Competenze Counseling. Tutti i diritti riservati.</p>
       </footer>
     </div>
