@@ -28,20 +28,12 @@ export const TOOLS: Tool[] = [
     comingSoon: false,
   },
   {
-    id: 'case-studies',
-    title: 'Analisi di Casi Studio',
-    description: 'Analizza scenari complessi di casi studio e sviluppa piani di trattamento efficaci. Ricevi feedback sulla tua analisi.',
-    icon: <ClipboardListIcon />,
-    actionText: 'Analizza un Caso',
-    comingSoon: true,
-  },
-  {
     id: 'vissi-explorer',
     title: 'Scopri il VISSI',
     description: 'Impara a riconoscere le risposte trappola (Valutare, Interpretare, Soluzionare, Sostenere, Investigare) con esempi pratici e quiz interattivi.',
     icon: <QuestionMarkCircleIcon />,
-    actionText: 'Esplora il VISSI',
-    comingSoon: true,
+    actionText: 'Inizia Esercizio',
+    comingSoon: false,
   },
   {
     id: 'phenomenological-feedback',
@@ -49,6 +41,14 @@ export const TOOLS: Tool[] = [
     description: "Allenati a fornire un feedback basato sul 'qui e ora', senza interpretazioni o giudizi, per aumentare la consapevolezza del cliente.",
     icon: <BookOpenIcon />,
     actionText: 'Inizia Pratica',
+    comingSoon: true,
+  },
+  {
+    id: 'case-studies',
+    title: 'Analisi di Casi Studio',
+    description: 'Analizza scenari complessi di casi studio e sviluppa piani di trattamento efficaci. Ricevi feedback sulla tua analisi.',
+    icon: <ClipboardListIcon />,
+    actionText: 'Analizza un Caso',
     comingSoon: true,
   },
 ];

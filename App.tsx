@@ -4,6 +4,7 @@ import ToolCard from './components/ToolCard';
 import RolePlayingTool from './components/RolePlayingTool';
 import RapportTool from './components/RapportTool';
 import MaslowTool from './components/MaslowTool';
+import VissiTool from './components/VissiTool';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -22,7 +23,10 @@ const App: React.FC = () => {
     return <RapportTool onGoHome={handleGoHome} />;
   } else if (activeTool === 'maslow-pyramid') {
     return <MaslowTool onGoHome={handleGoHome} />;
+  } else if (activeTool === 'vissi-explorer') {
+    return <VissiTool onGoHome={handleGoHome} />;
   }
+
 
   // Qui potranno essere aggiunti altri strumenti con 'else if'
 
