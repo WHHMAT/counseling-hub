@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon } from './components/icons';
 
 export const TOOLS: Tool[] = [
   {
@@ -8,6 +8,14 @@ export const TOOLS: Tool[] = [
     title: 'Partner di Riformulazione',
     description: 'Affina la tua abilità di ascolto attivo. Riformula la frase di un cliente evitando le trappole del VISSI e ricevi un feedback immediato dal supervisore AI.',
     icon: <UsersIcon />,
+    actionText: 'Inizia Esercizio',
+    comingSoon: false,
+  },
+  {
+    id: 'rapport-pacing',
+    title: 'Pratica del Rapport',
+    description: 'Allenati a costruire il rapport con il cliente attraverso la tecnica del ricalco. Esplora diverse modalità di mirroring per creare una connessione empatica.',
+    icon: <LinkIcon />,
     actionText: 'Inizia Esercizio',
     comingSoon: false,
   },

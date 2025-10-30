@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TOOLS } from './constants';
 import ToolCard from './components/ToolCard';
 import RolePlayingTool from './components/RolePlayingTool';
+import RapportTool from './components/RapportTool';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -16,6 +17,8 @@ const App: React.FC = () => {
 
   if (activeTool === 'rogerian-reformulation') {
     return <RolePlayingTool onGoHome={handleGoHome} />;
+  } else if (activeTool === 'rapport-pacing') {
+    return <RapportTool onGoHome={handleGoHome} />;
   }
 
   // Qui potranno essere aggiunti altri strumenti con 'else if'
