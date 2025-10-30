@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,8 +120,6 @@ const RolePlayingTool: React.FC<{ onGoHome: () => void }> = ({ onGoHome }) => {
         setFeedback('');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            
             const typeInstruction = REFORMULATION_TYPES[reformulationType].promptInstruction;
             
             const prompt = `Sei un supervisore esperto di counseling specializzato nell'approccio centrato sulla persona di Carl Rogers. Il tuo compito è valutare la risposta di uno studente di counseling alla frase di un cliente.
@@ -155,12 +152,20 @@ Una breve frase positiva per motivare lo studente.
 **Riformulazione dello Studente:** "${studentResponse}"
 ---`;
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
+            const res = await fetch('/.netlify/functions/generateFeedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt }),
             });
 
-            setFeedback(response.text);
+            if (!res.ok) {
+                throw new Error(`Error: ${res.statusText}`);
+            }
+
+            const data = await res.json();
+            setFeedback(data.feedback);
 
         } catch (e) {
             console.error(e);

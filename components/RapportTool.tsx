@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -58,7 +57,7 @@ const RapportTool: React.FC<{ onGoHome: () => void }> = ({ onGoHome }) => {
     };
 
     const handleGenerateFeedback = async () => {
-        if (!studentResponse.trim()) {
+        if (!studentResponse.trim() || !clientSituation) {
             setError("Per favore, inserisci la tua risposta.");
             return;
         }
@@ -67,8 +66,6 @@ const RapportTool: React.FC<{ onGoHome: () => void }> = ({ onGoHome }) => {
         setFeedback('');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            
             const prompt = `Sei un formatore esperto di PNL (Programmazione Neuro-Linguistica) e counseling, specializzato nell'insegnare la tecnica del "ricalco" (pacing/mirroring) per costruire il rapport.
 
 Il tuo compito è analizzare e valutare la risposta di uno studente di counseling alla frase di un cliente, fornendo un feedback costruttivo.
@@ -106,12 +103,20 @@ Offri 1-2 esempi alternativi di risposta che integrino più livelli di ricalco, 
 **Risposta dello Studente:** "${studentResponse}"
 ---`;
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
+            const res = await fetch('/.netlify/functions/generateFeedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt }),
             });
 
-            setFeedback(response.text);
+            if (!res.ok) {
+                throw new Error(`Error: ${res.statusText}`);
+            }
+
+            const data = await res.json();
+            setFeedback(data.feedback);
 
         } catch (e) {
             console.error(e);

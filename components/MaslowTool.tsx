@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,8 +61,6 @@ const MaslowTool: React.FC<{ onGoHome: () => void }> = ({ onGoHome }) => {
         setFeedback('');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            
             const prompt = `Sei un supervisore di counseling esperto, specializzato in psicologia umanistica e nella teoria della Gerarchia dei Bisogni di Abraham Maslow.
 
 Il tuo compito è analizzare la valutazione di uno studente di counseling riguardo alla storia di un cliente. Lo studente deve identificare i bisogni del cliente e collocarli correttamente nei 5 livelli della piramide di Maslow:
@@ -96,12 +93,20 @@ Suggerisci come il counselor potrebbe usare questa analisi in una sessione reale
 **Analisi dello Studente:** "${studentAnalysis}"
 ---`;
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
+            const res = await fetch('/.netlify/functions/generateFeedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt }),
             });
 
-            setFeedback(response.text);
+            if (!res.ok) {
+                throw new Error(`Error: ${res.statusText}`);
+            }
+
+            const data = await res.json();
+            setFeedback(data.feedback);
 
         } catch (e) {
             console.error(e);
