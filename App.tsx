@@ -5,6 +5,8 @@ import RolePlayingTool from './components/RolePlayingTool';
 import RapportTool from './components/RapportTool';
 import MaslowTool from './components/MaslowTool';
 import VissiTool from './components/VissiTool';
+import PhenomenologicalFeedbackTool from './components/PhenomenologicalFeedbackTool';
+import SmartGoalTool from './components/SmartGoalTool';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
 
@@ -44,6 +46,10 @@ const App: React.FC = () => {
     return <MaslowTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
   } else if (activeTool === 'vissi-explorer') {
     return <VissiTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+  } else if (activeTool === 'phenomenological-feedback') {
+    return <PhenomenologicalFeedbackTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+  } else if (activeTool === 'smart-goal') {
+    return <SmartGoalTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
   }
 
 

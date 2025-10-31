@@ -294,7 +294,6 @@ Una breve frase positiva per motivare lo studente.
                         {renderMarkdown(feedback)}
                      </div>
                      <div className="mt-6 text-center">
-                         {/* FIX: Corrected closing tag from </sbutton> to </button> */}
                          <button
                              onClick={setNewSentence}
                              className="bg-amber-500 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 ease-in-out hover:bg-amber-600 shadow-md hover:shadow-lg"

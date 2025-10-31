@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon } from './components/icons';
 
 export const TOOLS: Tool[] = [
   {
@@ -41,7 +41,15 @@ export const TOOLS: Tool[] = [
     description: "Allenati a fornire un feedback basato sul 'qui e ora', senza interpretazioni o giudizi, per aumentare la consapevolezza del cliente.",
     icon: <BookOpenIcon />,
     actionText: 'Inizia Pratica',
-    comingSoon: true,
+    comingSoon: false,
+  },
+  {
+    id: 'smart-goal',
+    title: 'Obiettivo SMART',
+    description: 'Impara a definire obiettivi ben formati con il cliente utilizzando il modello S.M.A.R.T. (Specifico, Misurabile, Raggiungibile, Rilevante, Temporizzato).',
+    icon: <TargetIcon />,
+    actionText: 'Definisci un Obiettivo',
+    comingSoon: false,
   },
   {
     id: 'case-studies',

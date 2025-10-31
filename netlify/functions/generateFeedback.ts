@@ -10,20 +10,32 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
   }
 
   try {
-    const { prompt } = JSON.parse(event.body || '{}');
+    const body = JSON.parse(event.body || '{}');
+    const { prompt, systemInstruction, userContent } = body;
 
-    if (!prompt) {
+    if (!prompt && (!systemInstruction || !userContent)) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Prompt is required' }),
+        body: JSON.stringify({ error: 'Prompt or systemInstruction/userContent is required' }),
       };
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+    let finalPrompt;
+
+    if (systemInstruction && userContent) {
+      // For structured requests (like from SmartGoalTool), combine them into a single prompt.
+      // This is more stable than using the systemInstruction config for complex tasks.
+      finalPrompt = `${systemInstruction}\n\n---\n\n${userContent}`;
+    } else {
+      // For simple requests, use the prompt directly.
+      finalPrompt = prompt;
+    }
+
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: prompt,
+        contents: finalPrompt,
     });
 
     return {
