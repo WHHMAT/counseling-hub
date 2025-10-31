@@ -68,7 +68,12 @@ const REFORMULATION_TYPES = {
     }
 };
 
-const RolePlayingTool: React.FC<{ onGoHome: () => void }> = ({ onGoHome }) => {
+interface RolePlayingToolProps {
+  onGoHome: () => void;
+  onExerciseComplete: () => void;
+}
+
+const RolePlayingTool: React.FC<RolePlayingToolProps> = ({ onGoHome, onExerciseComplete }) => {
     const [reformulationType, setReformulationType] = useState<keyof typeof REFORMULATION_TYPES | null>(null);
     const [clientSentence, setClientSentence] = useState('');
     const [studentResponse, setStudentResponse] = useState('');
@@ -166,6 +171,7 @@ Una breve frase positiva per motivare lo studente.
 
             const data = await res.json();
             setFeedback(data.feedback);
+            onExerciseComplete();
 
         } catch (e) {
             console.error(e);

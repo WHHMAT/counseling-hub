@@ -31,8 +31,12 @@ const CLIENT_SITUATIONS = [
     { sentence: "Questa decisione mi lascia una sensazione di vuoto dentro, un buco nello stomaco.", cue: "poggiando una mano sulla pancia." }
 ];
 
+interface RapportToolProps {
+  onGoHome: () => void;
+  onExerciseComplete: () => void;
+}
 
-const RapportTool: React.FC<{ onGoHome: () => void }> = ({ onGoHome }) => {
+const RapportTool: React.FC<RapportToolProps> = ({ onGoHome, onExerciseComplete }) => {
     const [clientSituation, setClientSituation] = useState<{ sentence: string; cue: string } | null>(null);
     const [studentResponse, setStudentResponse] = useState('');
     const [feedback, setFeedback] = useState('');
@@ -117,6 +121,7 @@ Offri 1-2 esempi alternativi di risposta che integrino più livelli di ricalco, 
 
             const data = await res.json();
             setFeedback(data.feedback);
+            onExerciseComplete();
 
         } catch (e) {
             console.error(e);

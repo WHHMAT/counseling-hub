@@ -7,7 +7,7 @@ const ArrowLeftIcon: React.FC = () => (
 );
 
 const RefreshIcon: React.FC = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5m11 2a9 9 0 11-2-7.857" />
     </svg>
 );
@@ -38,7 +38,12 @@ const DIALOGUES: { id: number; client: string; counselor: string; trap: VissiTra
     { id: 7, client: "Credo che il mio partner non mi ami più.", counselor: "Perché non provi a organizzare una cena romantica per riaccendere la fiamma?", trap: 'Soluzionare', explanation: "Il counselor propone una soluzione pratica a un problema emotivo complesso, ignorando la necessità del cliente di esprimere e comprendere il suo dolore." }
 ];
 
-const VissiTool: React.FC<{ onGoHome: () => void }> = ({ onGoHome }) => {
+interface VissiToolProps {
+  onGoHome: () => void;
+  onExerciseComplete: () => void;
+}
+
+const VissiTool: React.FC<VissiToolProps> = ({ onGoHome, onExerciseComplete }) => {
     const [dialogue, setDialogue] = useState(DIALOGUES[0]);
     const [userSelection, setUserSelection] = useState<VissiTrap | null>(null);
     const [userExplanation, setUserExplanation] = useState('');
@@ -118,6 +123,7 @@ Offri un esempio concreto di come il counselor avrebbe potuto rispondere in modo
             const data = await res.json();
             setFeedback(data.feedback);
             setShowAnswer(true);
+            onExerciseComplete();
         } catch (e) {
             console.error(e);
             setError("Si è verificato un errore durante la generazione del feedback. Riprova.");

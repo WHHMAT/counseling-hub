@@ -26,8 +26,12 @@ const CLIENT_STORIES = [
     { id: 5, story: "Ho tutto quello che un artista potrebbe desiderare: mostre, critiche positive, opere vendute a cifre che non avrei mai immaginato. Ho raggiunto tutti gli obiettivi che mi ero prefissato. E adesso? Sento un vuoto. La spinta creativa, quella fame che mi portava a dipingere per ore, si è affievolita. Ho iniziato un percorso di volontariato, insegno arte ai bambini di un quartiere difficile. È l'unica cosa che mi dà ancora un senso, vedere i loro occhi illuminarsi. Ma mi chiedo se la mia arte abbia ancora qualcosa da dire." }
 ];
 
+interface MaslowToolProps {
+  onGoHome: () => void;
+  onExerciseComplete: () => void;
+}
 
-const MaslowTool: React.FC<{ onGoHome: () => void }> = ({ onGoHome }) => {
+const MaslowTool: React.FC<MaslowToolProps> = ({ onGoHome, onExerciseComplete }) => {
     const [clientStory, setClientStory] = useState<{ id: number; story: string } | null>(null);
     const [studentAnalysis, setStudentAnalysis] = useState('');
     const [feedback, setFeedback] = useState('');
@@ -107,6 +111,7 @@ Suggerisci come il counselor potrebbe usare questa analisi in una sessione reale
 
             const data = await res.json();
             setFeedback(data.feedback);
+            onExerciseComplete();
 
         } catch (e) {
             console.error(e);
