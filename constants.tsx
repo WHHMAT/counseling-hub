@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon } from './components/icons';
 
 export const TOOLS: Tool[] = [
   {
@@ -49,6 +49,14 @@ export const TOOLS: Tool[] = [
     description: 'Impara a definire obiettivi ben formati con il cliente utilizzando il modello S.M.A.R.T. (Specifico, Misurabile, Raggiungibile, Rilevante, Temporizzato).',
     icon: <TargetIcon />,
     actionText: 'Definisci un Obiettivo',
+    comingSoon: false,
+  },
+  {
+    id: 'self-assessment-hub',
+    title: 'Test di Autovalutazione',
+    description: 'Esplora diverse aree di te stesso con i nostri test di auto-riflessione, come autostima, giudice interiore e altro.',
+    icon: <ClipboardCheckIcon />,
+    actionText: 'Scegli un Test',
     comingSoon: false,
   },
   {

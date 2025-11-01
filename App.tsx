@@ -7,6 +7,7 @@ import MaslowTool from './components/MaslowTool';
 import VissiTool from './components/VissiTool';
 import PhenomenologicalFeedbackTool from './components/PhenomenologicalFeedbackTool';
 import SmartGoalTool from './components/SmartGoalTool';
+import SelfAssessmentHub from './components/SelfAssessmentHub';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
 
@@ -50,6 +51,8 @@ const App: React.FC = () => {
     return <PhenomenologicalFeedbackTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
   } else if (activeTool === 'smart-goal') {
     return <SmartGoalTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+  } else if (activeTool === 'self-assessment-hub') {
+    return <SelfAssessmentHub onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
   }
 
 
