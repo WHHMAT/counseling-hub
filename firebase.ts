@@ -3,13 +3,15 @@
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
+import "firebase/compat/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDqOwyCbE7qHGo-jUwH9fJtgijTUseMjAE",
+  // SICUREZZA: La chiave API è stata rimossa e verrà caricata dalle variabili d'ambiente di Netlify.
+  apiKey: process.env.API_KEY,
   authDomain: "hub-competenze-counseling.firebaseapp.com",
   projectId: "hub-competenze-counseling",
-  storageBucket: "hub-competenze-counseling.firebasestorage.app",
+  storageBucket: "hub-competenze-counseling.appspot.com",
   messagingSenderId: "569840620530",
   appId: "1:569840620530:web:828446d2c371c1a6db916b",
   measurementId: "G-6F3QC3G0KT"
@@ -24,5 +26,6 @@ if (!firebase.apps.length) {
 // Export services for use in other parts of the app
 export const auth = firebase.auth();
 export const db = firebase.firestore();
+export const storage = firebase.storage();
 
 export default firebase;

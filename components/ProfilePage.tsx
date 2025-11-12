@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
-import { StarIcon, ClockIcon, TrophyIcon } from './icons';
+import { StarIcon, ClockIcon, TrophyIcon, CameraIcon } from './icons';
+import { storage, db } from '../firebase';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -9,9 +10,9 @@ const ArrowLeftIcon: React.FC = () => (
     </svg>
 );
 
-const LoadingSpinner: React.FC = () => (
-    <div className="flex justify-center items-center py-10">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600"></div>
+const LoadingSpinner: React.FC<{ size?: string }> = ({ size = "h-12 w-12" }) => (
+    <div className="flex justify-center items-center">
+        <div className={`animate-spin rounded-full border-b-2 border-sky-600 ${size}`}></div>
     </div>
 );
 
@@ -34,6 +35,11 @@ interface ProfilePageProps {
 const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
     const { user } = useAuth();
     const { userData, loading } = useUserData();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState('');
+    const [isHovering, setIsHovering] = useState(false);
+
 
     const getUserInitials = (name: string | null | undefined): string => {
         if (!name) {
@@ -46,10 +52,55 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
         }
         return name.substring(0, 2).toUpperCase();
     };
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !user) {
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            setUploadError('Per favore, seleziona un file immagine.');
+            return;
+        }
+        
+        setIsUploading(true);
+        setUploadError('');
+
+        const filePath = `profile_pictures/${user.uid}/${file.name}`;
+        const storageRef = storage.ref(filePath);
+        const uploadTask = storageRef.put(file);
+
+        uploadTask.on(
+            'state_changed',
+            null,
+            (error) => {
+                console.error("Upload error:", error);
+                setUploadError('Errore durante il caricamento. Riprova.');
+                setIsUploading(false);
+            },
+            async () => {
+                try {
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    await user.updateProfile({ photoURL: downloadURL });
+                    await db.collection('users').doc(user.uid).update({ photoURL: downloadURL });
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                    setUploadError('Errore durante l\'aggiornamento del profilo.');
+                } finally {
+                    setIsUploading(false);
+                }
+            }
+        );
+    };
     
     const renderContent = () => {
         if (loading) {
-            return <LoadingSpinner />;
+            return <LoadingSpinner size="h-12 w-12 py-10" />;
         }
 
         if (!user || !userData) {
@@ -63,16 +114,34 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
         return (
              <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
                 <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
-                    <div className="h-24 w-24 bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-4xl flex-shrink-0">
-                         {user.photoURL ? (
-                            <img src={user.photoURL} alt="Foto profilo" className="h-full w-full rounded-full object-cover" />
-                        ) : (
-                            <span>{getUserInitials(user.displayName)}</span>
-                        )}
+                    <div 
+                        className="relative h-24 w-24 flex-shrink-0 cursor-pointer"
+                        onClick={handleAvatarClick}
+                        onMouseEnter={() => setIsHovering(true)}
+                        onMouseLeave={() => setIsHovering(false)}
+                    >
+                        <div className="h-full w-full bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-4xl">
+                            {user.photoURL ? (
+                                <img src={user.photoURL} alt="Foto profilo" className="h-full w-full rounded-full object-cover" />
+                            ) : (
+                                <span>{getUserInitials(user.displayName)}</span>
+                            )}
+                        </div>
+                        <div className={`absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center transition-opacity ${isHovering || isUploading ? 'opacity-100' : 'opacity-0'}`}>
+                            {isUploading ? <LoadingSpinner size="h-8 w-8" /> : <CameraIcon className="h-8 w-8 text-white" />}
+                        </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="image/png, image/jpeg"
+                            hidden
+                        />
                     </div>
                     <div className="text-center sm:text-left">
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{user.displayName || `${userData.firstName} ${userData.lastName}`}</h1>
                         <p className="text-gray-600 text-lg">{user.email}</p>
+                        {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
                     </div>
                 </div>
                 
