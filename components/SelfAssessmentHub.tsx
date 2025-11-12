@@ -4,7 +4,10 @@ import ToolCard from './ToolCard';
 import SelfEsteemTest from './SelfEsteemTest';
 import InnerCriticTest from './InnerCriticTest';
 import BoundariesTest from './BoundariesTest';
-import { ClipboardCheckIcon, ScaleIcon, ShieldCheckIcon } from './icons';
+import EmotionalIntelligenceTest from './EmotionalIntelligenceTest';
+import AssertivenessTest from './AssertivenessTest';
+import StressTest from './StressTest';
+import { ClipboardCheckIcon, ScaleIcon, ShieldCheckIcon, HeartIcon, ChatAlt2Icon, FireIcon } from './icons';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -37,6 +40,30 @@ const ASSESSMENT_TESTS: Tool[] = [
     actionText: 'Inizia il Test',
     comingSoon: false,
   },
+  {
+    id: 'emotional-intelligence',
+    title: 'Test Intelligenza Emotiva',
+    description: 'Esplora la tua capacità di riconoscere, comprendere e gestire le tue emozioni e quelle degli altri per migliorare le relazioni e il benessere.',
+    icon: <HeartIcon />,
+    actionText: 'Inizia il Test',
+    comingSoon: false,
+  },
+  {
+    id: 'assertiveness',
+    title: 'Test sull\'Assertività',
+    description: 'Valuta la tua capacità di esprimere i tuoi bisogni, opinioni e limiti in modo chiaro, diretto e rispettoso.',
+    icon: <ChatAlt2Icon />,
+    actionText: 'Inizia il Test',
+    comingSoon: false,
+  },
+  {
+    id: 'stress',
+    title: 'Test sullo Stress',
+    description: 'Valuta il tuo livello di stress attuale e identifica le principali fonti di tensione nella tua vita per sviluppare strategie di gestione più efficaci.',
+    icon: <FireIcon />,
+    actionText: 'Inizia il Test',
+    comingSoon: false,
+  },
 ];
 
 interface SelfAssessmentHubProps {
@@ -66,6 +93,18 @@ const SelfAssessmentHub: React.FC<SelfAssessmentHubProps> = ({ onGoHome, onExerc
     if (activeTest === 'healthy-boundaries') {
         return <BoundariesTest onGoHome={handleGoBackToHub} onExerciseComplete={onExerciseComplete} backButtonText="Torna alla lista dei test" />;
     }
+    
+    if (activeTest === 'emotional-intelligence') {
+        return <EmotionalIntelligenceTest onGoHome={handleGoBackToHub} onExerciseComplete={onExerciseComplete} backButtonText="Torna alla lista dei test" />;
+    }
+
+    if (activeTest === 'assertiveness') {
+        return <AssertivenessTest onGoHome={handleGoBackToHub} onExerciseComplete={onExerciseComplete} backButtonText="Torna alla lista dei test" />;
+    }
+
+    if (activeTest === 'stress') {
+        return <StressTest onGoHome={handleGoBackToHub} onExerciseComplete={onExerciseComplete} backButtonText="Torna alla lista dei test" />;
+    }
 
     return (
         <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
@@ -84,7 +123,7 @@ const SelfAssessmentHub: React.FC<SelfAssessmentHubProps> = ({ onGoHome, onExerc
                   </p>
                 </header>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                   {ASSESSMENT_TESTS.map((test) => (
                     <ToolCard key={test.id} tool={test} onStart={handleStartTest} />
                   ))}

@@ -10,79 +10,132 @@ import SmartGoalTool from './components/SmartGoalTool';
 import SelfAssessmentHub from './components/SelfAssessmentHub';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
+import Header from './components/Header';
+import AuthPage from './components/AuthPage';
+import ProfilePage from './components/ProfilePage';
+import { useAuth } from './hooks/useAuth';
+import { db } from './firebase';
+import firebase from './firebase';
 
 const App: React.FC = () => {
-  const [activeTool, setActiveTool] = useState<string | null>(null);
-  const [exerciseCount, setExerciseCount] = useState<number>(() => {
-    const savedCount = localStorage.getItem('exerciseCount');
-    return savedCount ? parseInt(savedCount, 10) : 0;
-  });
+  const [activeView, setActiveView] = useState<string | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [showDonationPopup, setShowDonationPopup] = useState(false);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    localStorage.setItem('exerciseCount', exerciseCount.toString());
-  }, [exerciseCount]);
+  const handleExerciseComplete = async () => {
+    if (!user) {
+        // Per gli utenti non loggati, gestiamo un contatore temporaneo per il popup
+        const anonCount = parseInt(sessionStorage.getItem('anonExerciseCount') || '0', 10) + 1;
+        sessionStorage.setItem('anonExerciseCount', anonCount.toString());
+        if (anonCount > 0 && anonCount % 5 === 0) {
+            setShowDonationPopup(true);
+        }
+        return;
+    }
 
-  const handleExerciseComplete = () => {
-    const newCount = exerciseCount + 1;
-    setExerciseCount(newCount);
-    if (newCount > 0 && newCount % 5 === 0) {
-      setShowDonationPopup(true);
+    const userRef = db.collection('users').doc(user.uid);
+    try {
+        await db.runTransaction(async (transaction) => {
+            const doc = await transaction.get(userRef);
+            if (!doc.exists) {
+                console.error("User document does not exist!");
+                return;
+            }
+            const data = doc.data();
+            const currentCount = data?.exerciseCount || 0;
+            const newCount = currentCount + 1;
+            
+            transaction.update(userRef, {
+                exerciseCount: firebase.firestore.FieldValue.increment(1),
+                points: firebase.firestore.FieldValue.increment(10) // Aggiungi 10 punti per esercizio
+            });
+            
+            if (newCount > 0 && newCount % 5 === 0) {
+                setShowDonationPopup(true);
+            }
+        });
+    } catch (error) {
+        console.error("Error updating user progress:", error);
     }
   };
 
-  const handleStartTool = (toolId: string) => {
-    setActiveTool(toolId);
+  const handleShowAuth = (mode: 'login' | 'register') => {
+    setAuthMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  const handleStartView = (viewId: string) => {
+    setActiveView(viewId);
   };
 
   const handleGoHome = () => {
-    setActiveTool(null);
+    setActiveView(null);
+  };
+  
+  const handleShowProfile = () => {
+    setActiveView('profile');
   };
 
-  if (activeTool === 'rogerian-reformulation') {
-    return <RolePlayingTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
-  } else if (activeTool === 'rapport-pacing') {
-    return <RapportTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
-  } else if (activeTool === 'maslow-pyramid') {
-    return <MaslowTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
-  } else if (activeTool === 'vissi-explorer') {
-    return <VissiTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
-  } else if (activeTool === 'phenomenological-feedback') {
-    return <PhenomenologicalFeedbackTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
-  } else if (activeTool === 'smart-goal') {
-    return <SmartGoalTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
-  } else if (activeTool === 'self-assessment-hub') {
-    return <SelfAssessmentHub onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
-  }
+  const renderContent = () => {
+    if (activeView === 'profile') {
+      return <ProfilePage onGoHome={handleGoHome} />;
+    }
+    if (activeView === 'rogerian-reformulation') {
+      return <RolePlayingTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+    } else if (activeView === 'rapport-pacing') {
+      return <RapportTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+    } else if (activeView === 'maslow-pyramid') {
+      return <MaslowTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+    } else if (activeView === 'vissi-explorer') {
+      return <VissiTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+    } else if (activeView === 'phenomenological-feedback') {
+      return <PhenomenologicalFeedbackTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+    } else if (activeView === 'smart-goal') {
+      return <SmartGoalTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+    } else if (activeView === 'self-assessment-hub') {
+      return <SelfAssessmentHub onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+    }
+    
+    // Schermata principale con gli strumenti
+    return (
+        <main className="container mx-auto px-4 py-12 sm:py-20">
+            <header className="text-center mb-16">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight">
+                <span className="block">Hub Competenze</span>
+                <span className="block text-sky-600">per Counselor</span>
+            </h1>
+            <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+                Seleziona uno strumento per iniziare a esercitarti e a sviluppare le tue abilità di counseling.
+            </p>
+            </header>
 
-
-  // Qui potranno essere aggiunti altri strumenti con 'else if'
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {TOOLS.map((tool) => (
+                <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
+            ))}
+            </div>
+            
+            <section className="mt-24 max-w-2xl mx-auto">
+                <FeedbackForm />
+            </section>
+        </main>
+    );
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
+      <Header onGoHome={handleGoHome} onShowAuth={handleShowAuth} onShowProfile={handleShowProfile} />
+      <AuthPage 
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authMode}
+      />
       <DonationPopup isOpen={showDonationPopup} onClose={() => setShowDonationPopup(false)} />
-      <main className="container mx-auto px-4 py-12 sm:py-20">
-        <header className="text-center mb-16">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight">
-            <span className="block">Hub Competenze</span>
-            <span className="block text-sky-600">per Counselor</span>
-          </h1>
-          <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-            Seleziona uno strumento per iniziare a esercitarti e a sviluppare le tue abilità di counseling.
-          </p>
-        </header>
+      
+      {renderContent()}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {TOOLS.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} onStart={handleStartTool} />
-          ))}
-        </div>
-        
-        <section className="mt-24 max-w-2xl mx-auto">
-            <FeedbackForm />
-        </section>
-
-      </main>
       <footer className="text-center py-8">
         <p className="text-gray-500">&copy; {new Date().getFullYear()} Hub Competenze Counseling. Tutti i diritti riservati.</p>
       </footer>
