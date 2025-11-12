@@ -20,6 +20,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       };
     }
 
+    // FIX: Updated to use process.env.API_KEY as per the coding guidelines.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     let finalPrompt;

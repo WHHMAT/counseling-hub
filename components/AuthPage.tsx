@@ -35,12 +35,16 @@ const AuthPage: React.FC<AuthPageProps> = ({ isOpen, onClose, initialMode }) => 
   if (!isOpen) return null;
 
   const handleFirebaseError = (err: any) => {
+      console.error("Firebase Auth Error:", err.code); // Per debugging
       switch (err.code) {
-          case 'auth/user-not-found': return 'Nessun utente trovato con questa email.';
-          case 'auth/wrong-password': return 'Password errata. Riprova.';
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+              return 'Credenziali non valide. Controlla email e password.';
           case 'auth/email-already-in-use': return 'Questa email è già registrata. Prova ad accedere.';
           case 'auth/weak-password': return 'La password deve essere di almeno 6 caratteri.';
           case 'auth/invalid-email': return 'Inserisci un indirizzo email valido.';
+          case 'auth/too-many-requests': return 'Troppi tentativi di accesso falliti. Riprova più tardi.';
           default: return 'Si è verificato un errore. Riprova.';
       }
   };

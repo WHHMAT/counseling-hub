@@ -7,7 +7,7 @@ import "firebase/compat/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  // SICUREZZA: La chiave API è stata rimossa e verrà caricata dalle variabili d'ambiente di Netlify.
+  // SICUREZZA: La chiave API viene caricata dalle variabili d'ambiente.
   apiKey: process.env.API_KEY,
   authDomain: "hub-competenze-counseling.firebaseapp.com",
   projectId: "hub-competenze-counseling",
