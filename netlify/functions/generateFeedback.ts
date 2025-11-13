@@ -20,7 +20,8 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       };
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    // FIX: The API key MUST be read from process.env.API_KEY
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const generationRequest = {
         model: 'gemini-2.5-flash',
@@ -30,8 +31,8 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
 
     const response = await ai.models.generateContent(generationRequest);
     
-    // Estrazione del testo robusta e controllo di sicurezza
-    const feedbackText = response.candidates?.[0]?.content?.parts?.map(part => part.text).join('') ?? '';
+    // FIX: Use the recommended .text property for robust text extraction.
+    const feedbackText = response.text;
     
     // Controlla se la risposta è stata bloccata per motivi di sicurezza
     if (!feedbackText && response.promptFeedback?.blockReason) {
@@ -49,12 +50,12 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
   } catch (error) {
     console.error('Error generating feedback:', error);
     
-    // Migliorata la gestione degli errori per fornire un messaggio più specifico
     let errorMessage = 'Si è verificato un errore durante la comunicazione con il servizio AI. Riprova più tardi.';
     const errorString = (error as object)?.toString() || '';
 
     if (errorString.includes('API key') || errorString.includes('400') || errorString.includes('403')) {
-        errorMessage = "La chiave API per Gemini non è valida o non è configurata correttamente. Potrebbe essere necessario verificarla nelle impostazioni di Netlify.";
+        // FIX: Updated error message to be more specific about the variable name.
+        errorMessage = "La chiave API non è valida o non è configurata. Assicurati che la variabile d'ambiente 'API_KEY' sia impostata correttamente nelle impostazioni di Netlify.";
     } else if (errorString.includes('timed out')) {
         errorMessage = "La richiesta ha impiegato troppo tempo a rispondere. Riprova."
     } else if (errorString.includes('503')) {
