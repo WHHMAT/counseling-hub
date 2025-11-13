@@ -8,7 +8,7 @@ import "firebase/compat/storage";
 // Your web app's Firebase configuration
 const firebaseConfig = {
   // The API key is loaded from environment variables.
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY, 
   authDomain: "hub-competenze-counseling.firebaseapp.com",
   projectId: "hub-competenze-counseling",
   storageBucket: "hub-competenze-counseling.appspot.com",
