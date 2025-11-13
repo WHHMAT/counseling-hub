@@ -113,14 +113,20 @@ Termina con un messaggio positivo, ricordando che imparare a gestire i confini �
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt }),
             });
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
             const data = await res.json();
+            
+            if (!res.ok) {
+                throw new Error(data.error || `Errore del server: ${res.status}`);
+            }
+
             setResult(data.feedback);
             setShowResult(true);
             onExerciseComplete();
         } catch (e) {
             console.error(e);
-            setError("Si è verificato un errore durante la generazione del resoconto. Riprova.");
+            const errorMessage = e instanceof Error ? e.message : "Si è verificato un errore sconosciuto. Riprova.";
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

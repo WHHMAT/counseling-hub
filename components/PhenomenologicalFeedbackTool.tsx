@@ -118,13 +118,19 @@ Offri un esempio concreto e conciso di come una delle tre parti avrebbe potuto e
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt }),
             });
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
             const data = await res.json();
+            
+            if (!res.ok) {
+                throw new Error(data.error || `Errore del server: ${res.status}`);
+            }
+
             setFeedback(data.feedback);
             onExerciseComplete();
         } catch (e) {
             console.error(e);
-            setError("Si è verificato un errore durante la generazione del feedback. Riprova.");
+            const errorMessage = e instanceof Error ? e.message : "Si è verificato un errore sconosciuto. Riprova.";
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

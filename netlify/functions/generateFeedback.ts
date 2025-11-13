@@ -16,38 +16,54 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
     if (!prompt && (!systemInstruction || !userContent)) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Prompt or systemInstruction/userContent is required' }),
+        body: JSON.stringify({ error: 'Il prompt è richiesto.' }),
       };
     }
 
-    // FIX: Updated to use process.env.API_KEY as per the coding guidelines.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    let finalPrompt;
-
-    if (systemInstruction && userContent) {
-      // For structured requests (like from SmartGoalTool), combine them into a single prompt.
-      // This is more stable than using the systemInstruction config for complex tasks.
-      finalPrompt = `${systemInstruction}\n\n---\n\n${userContent}`;
-    } else {
-      // For simple requests, use the prompt directly.
-      finalPrompt = prompt;
-    }
-
-    const response = await ai.models.generateContent({
+    const generationRequest = {
         model: 'gemini-2.5-flash',
-        contents: finalPrompt,
-    });
+        contents: userContent || prompt,
+        ...(systemInstruction && { config: { systemInstruction: systemInstruction } })
+    };
+
+    const response = await ai.models.generateContent(generationRequest);
+    
+    // Estrazione del testo robusta e controllo di sicurezza
+    const feedbackText = response.candidates?.[0]?.content?.parts?.map(part => part.text).join('') ?? '';
+    
+    // Controlla se la risposta è stata bloccata per motivi di sicurezza
+    if (!feedbackText && response.promptFeedback?.blockReason) {
+        const blockMessage = `La tua richiesta è stata bloccata a causa delle policy di sicurezza (${response.promptFeedback.blockReason}). Prova a riformulare il tuo input.`;
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: blockMessage }),
+        };
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ feedback: response.text }),
+      body: JSON.stringify({ feedback: feedbackText }),
     };
   } catch (error) {
     console.error('Error generating feedback:', error);
+    
+    // Migliorata la gestione degli errori per fornire un messaggio più specifico
+    let errorMessage = 'Si è verificato un errore durante la comunicazione con il servizio AI. Riprova più tardi.';
+    const errorString = (error as object)?.toString() || '';
+
+    if (errorString.includes('API key') || errorString.includes('400') || errorString.includes('403')) {
+        errorMessage = "La chiave API per Gemini non è valida o non è configurata correttamente. Potrebbe essere necessario verificarla nelle impostazioni di Netlify.";
+    } else if (errorString.includes('timed out')) {
+        errorMessage = "La richiesta ha impiegato troppo tempo a rispondere. Riprova."
+    } else if (errorString.includes('503')) {
+        errorMessage = "Il servizio AI è momentaneamente non disponibile. Riprova tra qualche minuto."
+    }
+    
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to generate feedback' }),
+      body: JSON.stringify({ error: errorMessage }),
     };
   }
 };

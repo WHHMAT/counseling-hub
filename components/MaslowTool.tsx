@@ -105,17 +105,19 @@ Suggerisci come il counselor potrebbe usare questa analisi in una sessione reale
                 body: JSON.stringify({ prompt }),
             });
 
+            const data = await res.json();
+
             if (!res.ok) {
-                throw new Error(`Error: ${res.statusText}`);
+                throw new Error(data.error || `Errore del server: ${res.status}`);
             }
 
-            const data = await res.json();
             setFeedback(data.feedback);
             onExerciseComplete();
 
         } catch (e) {
             console.error(e);
-            setError("Si è verificato un errore durante la generazione del feedback. Riprova.");
+            const errorMessage = e instanceof Error ? e.message : "Si è verificato un errore sconosciuto. Riprova.";
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

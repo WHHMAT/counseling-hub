@@ -130,12 +130,18 @@ ${scenario.name}:`;
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ systemInstruction, userContent }),
             });
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
             const data = await res.json();
+            
+            if (!res.ok) {
+                 throw new Error(data.error || `Errore del server: ${res.status}`);
+            }
+
             setChatHistory(prev => [...prev, { sender: 'client', text: data.feedback }]);
         } catch (e) {
             console.error(e);
-            setChatHistory(prev => [...prev, { sender: 'client', text: "Mi dispiace, non ho capito. Puoi riformulare?" }]);
+            const errorMessage = e instanceof Error ? e.message : "Si è verificato un errore sconosciuto. Riprova.";
+            setChatHistory(prev => [...prev, { sender: 'client', text: `(Ops, si è verificato un errore: ${errorMessage})` }]);
         } finally {
             setIsClientTyping(false);
         }
@@ -213,13 +219,19 @@ ${chatHistory.map(msg => `${msg.sender === 'user' ? 'Counselor' : scenario.name}
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ systemInstruction, userContent }),
             });
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
             const data = await res.json();
+            
+            if (!res.ok) {
+                throw new Error(data.error || `Errore del server: ${res.status}`);
+            }
+            
             setFeedback(data.feedback);
             onExerciseComplete();
         } catch (e) {
             console.error(e);
-            setError("Si è verificato un errore durante la generazione del feedback. Riprova.");
+            const errorMessage = e instanceof Error ? e.message : "Si è verificato un errore sconosciuto. Riprova.";
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

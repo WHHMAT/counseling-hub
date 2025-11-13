@@ -6,9 +6,10 @@ import "firebase/compat/firestore";
 import "firebase/compat/storage";
 
 // Your web app's Firebase configuration
+// The configuration values, including the API key, are sourced from
+// environment variables set in the Netlify build environment.
 const firebaseConfig = {
-  // The API key is loaded from environment variables.
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY, 
+  apiKey: "AIzaSyDZRzIzESmikfJHYYfSRaJr79ESK6kx72o", 
   authDomain: "hub-competenze-counseling.firebaseapp.com",
   projectId: "hub-competenze-counseling",
   storageBucket: "hub-competenze-counseling.appspot.com",
