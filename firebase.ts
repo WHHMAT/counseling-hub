@@ -7,12 +7,8 @@ import "firebase/compat/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  // SICUREZZA: La chiave API viene caricata dalle variabili d'ambiente.
-  // FIX: Using a dedicated, client-safe environment variable for the Firebase API Key.
-  // The build tool (e.g., Vite, Netlify build) will replace `process.env.VITE_API_KEY` 
-  // with the actual value at build time.
-  // @ts-ignore
-  apiKey: process.env.VITE_API_KEY,
+  // The API key is loaded from environment variables.
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: "hub-competenze-counseling.firebaseapp.com",
   projectId: "hub-competenze-counseling",
   storageBucket: "hub-competenze-counseling.appspot.com",
