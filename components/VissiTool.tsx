@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useUserData } from '../hooks/useUserData';
+import { db } from '../firebase';
+import firebase from '../firebase';
+
+const TOOL_ID = 'vissi-explorer';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -40,10 +45,11 @@ const DIALOGUES: { id: number; client: string; counselor: string; trap: VissiTra
 
 interface VissiToolProps {
   onGoHome: () => void;
-  onExerciseComplete: () => void;
+  onExerciseComplete: (points: number, toolId: string, exerciseId: number) => void;
+  userData: ReturnType<typeof useUserData>['userData'];
 }
 
-const VissiTool: React.FC<VissiToolProps> = ({ onGoHome, onExerciseComplete }) => {
+const VissiTool: React.FC<VissiToolProps> = ({ onGoHome, onExerciseComplete, userData }) => {
     const [dialogue, setDialogue] = useState(DIALOGUES[0]);
     const [userSelection, setUserSelection] = useState<VissiTrap | null>(null);
     const [userExplanation, setUserExplanation] = useState('');
@@ -51,24 +57,46 @@ const VissiTool: React.FC<VissiToolProps> = ({ onGoHome, onExerciseComplete }) =
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [showAnswer, setShowAnswer] = useState(false);
+    const [showResetMessage, setShowResetMessage] = useState(false);
 
-    const setNewDialogue = () => {
+    const resetUserProgressForTool = async () => {
+        if (userData && firebase.auth().currentUser) {
+            const userRef = db.collection('users').doc(firebase.auth().currentUser.uid);
+            await userRef.update({
+                [`completedExercises.${TOOL_ID}`]: []
+            });
+        }
+    };
+
+    const setNewDialogue = async () => {
         setUserSelection(null);
         setUserExplanation('');
         setFeedback('');
         setError('');
         setShowAnswer(false);
 
-        let newDialogue;
-        do {
-            newDialogue = DIALOGUES[Math.floor(Math.random() * DIALOGUES.length)];
-        } while (newDialogue.id === dialogue.id);
-        setDialogue(newDialogue);
+        const completedDialogues = userData?.completedExercises?.[TOOL_ID] || [];
+        let availableDialogues = DIALOGUES.filter(d => !completedDialogues.includes(d.id));
+
+        if (availableDialogues.length === 0 && DIALOGUES.length > 0) {
+            setShowResetMessage(true);
+            setTimeout(() => setShowResetMessage(false), 4000);
+            await resetUserProgressForTool();
+            availableDialogues = DIALOGUES;
+        }
+
+        if (availableDialogues.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableDialogues.length);
+            setDialogue(availableDialogues[randomIndex]);
+        } else {
+            // Fallback in case DIALOGUES is empty
+            setDialogue({id: 0, client: "Nessun dialogo disponibile.", counselor: "", trap: 'Valutare', explanation: ""});
+        }
     };
 
     useEffect(() => {
         setNewDialogue();
-    }, []);
+    }, [userData]);
 
     const handleGenerateFeedback = async () => {
         if (!userSelection) {
@@ -111,6 +139,8 @@ Fornisci una spiegazione chiara e didattica del perché la risposta del counselo
 **Esempio di Riformulazione Efficace:**
 Offri un esempio concreto di come il counselor avrebbe potuto rispondere in modo più efficace, senza cadere in trappola. (Es. "Un'alternativa più efficace sarebbe stata una riformulazione come: 'Sentirti rendere la vita impossibile dal tuo capo deve essere davvero pesante.'").
 
+**Punteggio:**
+Assegna un punteggio numerico in base a questa logica: 10 se lo studente ha identificato la trappola CORRETTA e fornito una motivazione PERTINENTE. 5 se ha identificato la trappola CORRETTA ma la motivazione è debole o poco chiara. 0 se ha identificato la trappola SBAGLIATA.
 ---`;
 
         try {
@@ -128,7 +158,11 @@ Offri un esempio concreto di come il counselor avrebbe potuto rispondere in modo
 
             setFeedback(data.feedback);
             setShowAnswer(true);
-            onExerciseComplete();
+
+            const scoreMatch = data.feedback.match(/\*\*Punteggio:\*\*\s*(\d+)/);
+            const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
+
+            onExerciseComplete(score, TOOL_ID, dialogue.id);
         } catch (e) {
             console.error(e);
             const errorMessage = e instanceof Error ? e.message : "Si è verificato un errore sconosciuto. Riprova.";
@@ -159,6 +193,12 @@ Offri un esempio concreto di come il counselor avrebbe potuto rispondere in modo
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Esercizio: Riconosci le Trappole del VISSI</h1>
                     <p className="text-gray-600 mb-6">Leggi il dialogo, identifica la risposta trappola del counselor e spiega perché.</p>
                     
+                     {showResetMessage && (
+                        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-lg" role="alert">
+                            <p>Complimenti, hai completato tutti i dialoghi! Ora te li riproporremo per continuare a esercitarti.</p>
+                        </div>
+                    )}
+
                     <div className="relative bg-gray-50 border rounded-lg p-4 mb-6">
                         <p className="font-semibold text-gray-600">Cliente:</p>
                         <p className="text-lg italic text-gray-800">"{dialogue.client}"</p>

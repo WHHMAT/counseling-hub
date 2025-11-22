@@ -12,6 +12,7 @@ export interface UserData {
     practiceTime: number; // in minutes
     rank: string;
     createdAt: firebase.firestore.Timestamp;
+    completedExercises?: Record<string, (string | number)[]>;
 }
 
 export function useUserData() {

@@ -3,6 +3,9 @@ import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
 import { StarIcon, ClockIcon, TrophyIcon, CameraIcon } from './icons';
 import { storage, db } from '../firebase';
+import { TOOLS } from '../constants';
+import { EXERCISE_COUNTS } from '../data/exerciseCounts';
+
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,6 +42,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState('');
     const [isHovering, setIsHovering] = useState(false);
+
+    const reformulationSubtypeTitles: Record<string, string> = {
+        'general': 'Riformulazione Generale',
+        'simple': 'Riflessione Semplice',
+        'echo': 'Riformulazione Eco',
+        'paraphrase': 'Parafrasi',
+        'elucidation': 'Delucidazione',
+        'summary': 'Riepilogo'
+    };
+
+    const getToolTitle = (id: string): string => {
+        if (id.startsWith('rogerian-reformulation-')) {
+            const subtype = id.replace('rogerian-reformulation-', '');
+            return `Riformulazione: ${reformulationSubtypeTitles[subtype] || subtype}`;
+        }
+        const tool = TOOLS.find(t => t.id === id);
+        return tool ? tool.title : id;
+    };
 
 
     const getUserInitials = (name: string | null | undefined): string => {
@@ -165,6 +186,33 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
                         value={userData.rank}
                         color="bg-green-100"
                     />
+                </div>
+
+                <div className="mt-10">
+                    <h2 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">Progresso per Strumento</h2>
+                    <div className="space-y-5">
+                       {Object.keys(EXERCISE_COUNTS).sort().map(toolId => {
+                            const completedCount = userData.completedExercises?.[toolId]?.length || 0;
+                            const totalCount = EXERCISE_COUNTS[toolId];
+                            const percentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+                            const title = getToolTitle(toolId);
+
+                            return (
+                                <div key={toolId}>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <h3 className="text-md font-medium text-gray-700">{title}</h3>
+                                        <span className="text-sm font-semibold text-gray-600">{completedCount} / {totalCount}</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div 
+                                            className="bg-sky-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
+                                            style={{ width: `${percentage}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         );

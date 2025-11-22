@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useUserData } from '../hooks/useUserData';
+import { db } from '../firebase';
+import firebase from '../firebase';
+
+const TOOL_ID = 'maslow-pyramid';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,31 +33,52 @@ const CLIENT_STORIES = [
 
 interface MaslowToolProps {
   onGoHome: () => void;
-  onExerciseComplete: () => void;
+  onExerciseComplete: (points: number, toolId: string, exerciseId: number) => void;
+  userData: ReturnType<typeof useUserData>['userData'];
 }
 
-const MaslowTool: React.FC<MaslowToolProps> = ({ onGoHome, onExerciseComplete }) => {
+const MaslowTool: React.FC<MaslowToolProps> = ({ onGoHome, onExerciseComplete, userData }) => {
     const [clientStory, setClientStory] = useState<{ id: number; story: string } | null>(null);
     const [studentAnalysis, setStudentAnalysis] = useState('');
     const [feedback, setFeedback] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showResetMessage, setShowResetMessage] = useState(false);
 
     useEffect(() => {
         setNewStory();
-    }, []);
+    }, [userData]);
 
-    const setNewStory = () => {
+    const resetUserProgressForTool = async () => {
+        if (userData && firebase.auth().currentUser) {
+            const userRef = db.collection('users').doc(firebase.auth().currentUser.uid);
+            await userRef.update({
+                [`completedExercises.${TOOL_ID}`]: []
+            });
+        }
+    };
+
+    const setNewStory = async () => {
         setFeedback('');
         setStudentAnalysis('');
         setError('');
-        const randomIndex = Math.floor(Math.random() * CLIENT_STORIES.length);
-        let newStory = CLIENT_STORIES[randomIndex];
-        if (CLIENT_STORIES.length > 1 && clientStory && newStory.id === clientStory.id) {
-            const newIndex = (randomIndex + 1) % CLIENT_STORIES.length;
-            newStory = CLIENT_STORIES[newIndex];
+
+        const completedStories = userData?.completedExercises?.[TOOL_ID] || [];
+        let availableStories = CLIENT_STORIES.filter(story => !completedStories.includes(story.id));
+
+        if (availableStories.length === 0 && CLIENT_STORIES.length > 0) {
+            setShowResetMessage(true);
+            setTimeout(() => setShowResetMessage(false), 4000);
+            await resetUserProgressForTool();
+            availableStories = CLIENT_STORIES;
         }
-        setClientStory(newStory);
+
+        if (availableStories.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableStories.length);
+            setClientStory(availableStories[randomIndex]);
+        } else {
+            setClientStory({ id: 0, story: "Nessuna storia disponibile al momento." });
+        }
     };
 
     const handleGenerateFeedback = async () => {
@@ -91,6 +117,9 @@ Offri spunti più profondi. Ad esempio, spiega come un bisogno insoddisfatto a u
 **Consiglio Pratico per la Seduta:**
 Suggerisci come il counselor potrebbe usare questa analisi in una sessione reale. (Es: "Una domanda potente potrebbe essere: 'Mentre mi parli della paura di perdere la casa, cosa succede al tuo sentirti un professionista capace?' Questo collega il bisogno di sicurezza a quello di stima.").
 
+**Punteggio:**
+Assegna un punteggio numerico: 10 per un'analisi accurata che coglie i bisogni a più livelli e offre spunti profondi; 5 se l'analisi identifica solo i bisogni più evidenti o li classifica in modo impreciso; 0 se l'analisi è completamente fuori strada.
+
 ---
 **Storia del Cliente:** "${clientStory.story}"
 ---
@@ -112,7 +141,11 @@ Suggerisci come il counselor potrebbe usare questa analisi in una sessione reale
             }
 
             setFeedback(data.feedback);
-            onExerciseComplete();
+            
+            const scoreMatch = data.feedback.match(/\*\*Punteggio:\*\*\s*(\d+)/);
+            const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
+
+            onExerciseComplete(score, TOOL_ID, clientStory.id);
 
         } catch (e) {
             console.error(e);
@@ -171,6 +204,12 @@ Suggerisci come il counselor potrebbe usare questa analisi in una sessione reale
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Esercizio: Analisi dei Bisogni con la Piramide di Maslow</h1>
                     <p className="text-gray-600 mb-6">Leggi la storia del cliente e identifica i suoi bisogni insoddisfatti, collocandoli nei livelli della piramide di Maslow.</p>
 
+                    {showResetMessage && (
+                        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-lg" role="alert">
+                            <p>Complimenti, hai completato tutte le storie! Ora te le riproporremo per continuare a esercitarti.</p>
+                        </div>
+                    )}
+                    
                     {clientStory && (
                         <div className="relative bg-sky-50 border-l-4 border-sky-500 text-sky-800 p-4 rounded-r-lg mb-6">
                             <p className="font-semibold">Storia del Cliente:</p>

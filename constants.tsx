@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon } from './components/icons';
 
 export const TOOLS: Tool[] = [
   {
@@ -49,6 +49,22 @@ export const TOOLS: Tool[] = [
     description: 'Impara a definire obiettivi ben formati con il cliente utilizzando il modello S.M.A.R.T. (Specifico, Misurabile, Raggiungibile, Rilevante, Temporizzato).',
     icon: <TargetIcon />,
     actionText: 'Definisci un Obiettivo',
+    comingSoon: false,
+  },
+  {
+    id: 'eisenhower-matrix',
+    title: 'Pianificare con la matrice di Eisenhower',
+    description: 'Inserisci i tuoi impegni e, attraverso domande mirate, impara a dare le giuste priorità inserendoli nei quattro quadranti della matrice.',
+    icon: <GridIcon />,
+    actionText: 'Inizia a Pianificare',
+    comingSoon: false,
+  },
+  {
+    id: 'vision-crafting',
+    title: 'Definisci la tua Vision',
+    description: 'Un percorso guidato per esplorare valori e passioni e creare una vision statement personale che ti ispiri e ti guidi nel tuo percorso.',
+    icon: <LightBulbIcon />,
+    actionText: 'Inizia il Percorso',
     comingSoon: false,
   },
   {

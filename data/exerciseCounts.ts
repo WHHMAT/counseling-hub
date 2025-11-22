@@ -1,0 +1,15 @@
+export const EXERCISE_COUNTS: Record<string, number> = {
+  'rogerian-reformulation-general': 10,
+  'rogerian-reformulation-simple': 10,
+  'rogerian-reformulation-echo': 10,
+  'rogerian-reformulation-paraphrase': 10,
+  'rogerian-reformulation-elucidation': 10,
+  'rogerian-reformulation-summary': 10,
+  'rapport-pacing': 10,
+  'maslow-pyramid': 5,
+  'vissi-explorer': 7,
+  'phenomenological-feedback': 3,
+  'smart-goal': 5,
+  'eisenhower-matrix': 1,
+  'vision-crafting': 1,
+};

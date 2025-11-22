@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useUserData } from '../hooks/useUserData';
+import { db } from '../firebase';
+import firebase from '../firebase';
+
+const TOOL_ID_BASE = 'rogerian-reformulation';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,40 +75,63 @@ const REFORMULATION_TYPES = {
 
 interface RolePlayingToolProps {
   onGoHome: () => void;
-  onExerciseComplete: () => void;
+  onExerciseComplete: (points: number, toolId: string, exerciseId: string) => void;
+  userData: ReturnType<typeof useUserData>['userData'];
 }
 
-const RolePlayingTool: React.FC<RolePlayingToolProps> = ({ onGoHome, onExerciseComplete }) => {
+const RolePlayingTool: React.FC<RolePlayingToolProps> = ({ onGoHome, onExerciseComplete, userData }) => {
     const [reformulationType, setReformulationType] = useState<keyof typeof REFORMULATION_TYPES | null>(null);
     const [clientSentence, setClientSentence] = useState('');
     const [studentResponse, setStudentResponse] = useState('');
     const [feedback, setFeedback] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showResetMessage, setShowResetMessage] = useState(false);
 
     useEffect(() => {
         if (reformulationType) {
             setNewSentence();
         }
-    }, [reformulationType]);
+    }, [reformulationType, userData]);
 
     const cleanUpState = () => {
         setStudentResponse('');
         setFeedback('');
         setError('');
     };
-
-    const setNewSentence = () => {
-        cleanUpState();
-        const randomIndex = Math.floor(Math.random() * CLIENT_SENTENCES.length);
-        let newSentence = CLIENT_SENTENCES[randomIndex];
-        if (CLIENT_SENTENCES.length > 1) {
-            while (newSentence === clientSentence) {
-                const newIndex = Math.floor(Math.random() * CLIENT_SENTENCES.length);
-                newSentence = CLIENT_SENTENCES[newIndex];
-            }
+    
+    const resetUserProgressForTool = async () => {
+        if (userData && firebase.auth().currentUser && reformulationType) {
+            const toolId = `${TOOL_ID_BASE}-${reformulationType}`;
+            const userRef = db.collection('users').doc(firebase.auth().currentUser.uid);
+            await userRef.update({
+                [`completedExercises.${toolId}`]: []
+            });
         }
-        setClientSentence(newSentence);
+    };
+
+
+    const setNewSentence = async () => {
+        if (!reformulationType) return;
+        cleanUpState();
+
+        const toolId = `${TOOL_ID_BASE}-${reformulationType}`;
+        const completedSentences = userData?.completedExercises?.[toolId] || [];
+        let availableSentences = CLIENT_SENTENCES.filter(sentence => !completedSentences.includes(sentence));
+
+        if (availableSentences.length === 0 && CLIENT_SENTENCES.length > 0) {
+            setShowResetMessage(true);
+            setTimeout(() => setShowResetMessage(false), 4000);
+            await resetUserProgressForTool();
+            availableSentences = CLIENT_SENTENCES;
+        }
+
+        if (availableSentences.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableSentences.length);
+            setClientSentence(availableSentences[randomIndex]);
+        } else {
+            setClientSentence("Nessuna frase disponibile al momento.");
+        }
     };
 
     const handleSelectType = (type: keyof typeof REFORMULATION_TYPES) => {
@@ -150,6 +178,8 @@ Identifica esplicitamente se la risposta cade in una delle categorie VISSI. Se s
 Offri 1 o 2 esempi concreti della tecnica di riformulazione specifica richiesta per la frase del cliente.
 **Incoraggiamento Finale:**
 Una breve frase positiva per motivare lo studente.
+**Punteggio:**
+Assegna un punteggio numerico: 10 per una riformulazione eccellente che segue la tecnica e i principi; 5 per un tentativo valido con aree di miglioramento significative (es. contiene una lieve trappola VISSI o non centra perfettamente la tecnica); 0 se la riformulazione è una chiara trappola VISSI o non è pertinente.
 
 ---
 **Frase del Cliente:** "${clientSentence}"
@@ -172,7 +202,12 @@ Una breve frase positiva per motivare lo studente.
             }
 
             setFeedback(data.feedback);
-            onExerciseComplete();
+            
+            const scoreMatch = data.feedback.match(/\*\*Punteggio:\*\*\s*(\d+)/);
+            const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
+            
+            const toolId = `${TOOL_ID_BASE}-${reformulationType}`;
+            onExerciseComplete(score, toolId, clientSentence);
 
         } catch (e) {
             console.error(e);
@@ -248,11 +283,17 @@ Una breve frase positiva per motivare lo studente.
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Esercizio: {reformulationType && REFORMULATION_TYPES[reformulationType].title}</h1>
             <p className="text-gray-600 mb-6">Leggi la frase del cliente e prova a riformularla secondo la tecnica scelta, evitando le trappole del VISSI.</p>
             
+            {showResetMessage && (
+                <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-lg" role="alert">
+                    <p>Complimenti, hai completato tutte le frasi! Ora te le riproporremo per continuare a esercitarti.</p>
+                </div>
+            )}
+            
             <div className="relative bg-sky-50 border-l-4 border-sky-500 text-sky-800 p-4 rounded-r-lg mb-6">
                 <p className="font-semibold">Frase del Cliente:</p>
                 <p className="text-lg italic pr-12">"{clientSentence}"</p>
                 <button
-                    onClick={setNewSentence}
+                    onClick={() => setNewSentence()}
                     disabled={isLoading}
                     className="absolute top-1/2 right-4 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors text-gray-600 disabled:bg-gray-200 disabled:cursor-not-allowed"
                     aria-label="Genera una nuova frase"
@@ -297,7 +338,7 @@ Una breve frase positiva per motivare lo studente.
                      </div>
                      <div className="mt-6 text-center">
                          <button
-                             onClick={setNewSentence}
+                             onClick={() => setNewSentence()}
                              className="bg-amber-500 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 ease-in-out hover:bg-amber-600 shadow-md hover:shadow-lg"
                          >
                              Prossima Frase

@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useUserData } from '../hooks/useUserData';
+import { db } from '../firebase';
+import firebase from '../firebase';
+
+const TOOL_ID = 'smart-goal';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,7 +40,8 @@ const CLIENT_SCENARIOS = [
 
 interface SmartGoalToolProps {
   onGoHome: () => void;
-  onExerciseComplete: () => void;
+  onExerciseComplete: (points: number, toolId?: string, exerciseId?: number) => void;
+  userData: ReturnType<typeof useUserData>['userData'];
 }
 
 interface ChatMessage {
@@ -43,7 +49,7 @@ interface ChatMessage {
     text: string;
 }
 
-const SmartGoalTool: React.FC<SmartGoalToolProps> = ({ onGoHome, onExerciseComplete }) => {
+const SmartGoalTool: React.FC<SmartGoalToolProps> = ({ onGoHome, onExerciseComplete, userData }) => {
     const [mode, setMode] = useState<'self' | 'client' | null>(null);
     const [clientStep, setClientStep] = useState<'dialogue' | 'synthesis'>('dialogue');
     const [scenario, setScenario] = useState(CLIENT_SCENARIOS[0]);
@@ -61,6 +67,7 @@ const SmartGoalTool: React.FC<SmartGoalToolProps> = ({ onGoHome, onExerciseCompl
     const [userMessage, setUserMessage] = useState('');
     const [isClientTyping, setIsClientTyping] = useState(false);
     const chatContainerRef = useRef<HTMLDivElement>(null);
+    const [showResetMessage, setShowResetMessage] = useState(false);
 
 
     const [feedback, setFeedback] = useState('');
@@ -72,6 +79,12 @@ const SmartGoalTool: React.FC<SmartGoalToolProps> = ({ onGoHome, onExerciseCompl
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
     }, [chatHistory, isClientTyping]);
+
+    useEffect(() => {
+        if (mode === 'client') {
+            setNewScenario();
+        }
+    }, [userData, mode]);
 
     const resetFormState = () => {
         setObjective('');
@@ -90,9 +103,6 @@ const SmartGoalTool: React.FC<SmartGoalToolProps> = ({ onGoHome, onExerciseCompl
     const handleModeSelect = (selectedMode: 'self' | 'client') => {
         resetFormState();
         setMode(selectedMode);
-        if (selectedMode === 'client') {
-            setNewScenario();
-        }
     };
     
     const handleBackToSelection = () => {
@@ -100,13 +110,34 @@ const SmartGoalTool: React.FC<SmartGoalToolProps> = ({ onGoHome, onExerciseCompl
         resetFormState();
     }
 
-    const setNewScenario = () => {
+    const resetUserProgressForTool = async () => {
+        if (userData && firebase.auth().currentUser) {
+            const userRef = db.collection('users').doc(firebase.auth().currentUser.uid);
+            await userRef.update({
+                [`completedExercises.${TOOL_ID}`]: []
+            });
+        }
+    };
+
+    const setNewScenario = async () => {
         resetFormState();
-        let newScenario;
-        do {
-            newScenario = CLIENT_SCENARIOS[Math.floor(Math.random() * CLIENT_SCENARIOS.length)];
-        } while (newScenario.id === scenario.id);
-        setScenario(newScenario);
+        
+        const completedScenarios = userData?.completedExercises?.[TOOL_ID] || [];
+        let availableScenarios = CLIENT_SCENARIOS.filter(s => !completedScenarios.includes(s.id));
+
+        if (availableScenarios.length === 0 && CLIENT_SCENARIOS.length > 0) {
+            setShowResetMessage(true);
+            setTimeout(() => setShowResetMessage(false), 4000);
+            await resetUserProgressForTool();
+            availableScenarios = CLIENT_SCENARIOS;
+        }
+
+        if (availableScenarios.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableScenarios.length);
+            setScenario(availableScenarios[randomIndex]);
+        } else {
+            setScenario({ id: 0, name: 'Nessun cliente', goal: 'disponibile al momento.' });
+        }
     };
     
     const handleSendMessage = async () => {
@@ -149,6 +180,11 @@ ${scenario.name}:`;
 
 
     const handleGenerateFeedback = async () => {
+        if (mode === 'self' && !objective) {
+            setError("Per favore, descrivi il tuo obiettivo generale.");
+            return;
+        }
+
         if (!specific || !measurable || !achievable || !relevant || !timeBound) {
             setError("Per favore, compila tutti e cinque i campi S.M.A.R.T.");
             return;
@@ -174,7 +210,9 @@ Per ogni punto, sii specifico e costruttivo.
 **Suggerimento Migliorativo:**
 Offri un piccolo suggerimento per rendere uno dei punti ancora più forte.
 **Riformulazione Finale:**
-Proponi una frase unica e ben formata che integri tutti i punti S.M.A.R.T. in un obiettivo completo e motivante.`;
+Proponi una frase unica e ben formata che integri tutti i punti S.M.A.R.T. in un obiettivo completo e motivante.
+**Punteggio:**
+Assegna un punteggio numerico: 10 se tutti i campi sono compilati in modo coerente e formano un obiettivo S.M.A.R.T. solido; 5 se alcuni campi sono deboli o non ben allineati con gli altri; 0 se l'obiettivo è ancora vago o i campi non sono pertinenti.`;
             userContent = `**Obiettivo Generale:** "${objective}"
 **S (Specifico):** "${specific}"
 **M (Misurabile):** "${measurable}"
@@ -200,7 +238,10 @@ Evidenzia 1-2 cose che lo studente ha fatto particolarmente bene, sia nel dialog
 Suggerisci un aspetto chiave da migliorare. (Es: "Nel dialogo, prova a usare più domande che iniziano con 'Come' invece di 'Perché' per favorire l'esplorazione").
 
 **Domanda di Supervisione:**
-Concludi con una domanda aperta che stimoli la riflessione dello studente sul suo lavoro. (Es: "Qual è stata la domanda più difficile da porre durante il dialogo e perché?").`;
+Concludi con una domanda aperta che stimoli la riflessione dello studente sul suo lavoro. (Es: "Qual è stata la domanda più difficile da porre durante il dialogo e perché?").
+
+**Punteggio:**
+Assegna un punteggio numerico: 10 se sia il processo (dialogo) sia il risultato (sintesi) sono eccellenti e centrati sul cliente; 5 se il processo è buono ma la sintesi è debole, o viceversa; 0 se il counselor è stato direttivo e la sintesi non riflette il vissuto del cliente.`;
             userContent = `**Obiettivo Vago del Cliente:** "${scenario.name} ${scenario.goal}"
 **Cronologia del Dialogo:**
 ${chatHistory.map(msg => `${msg.sender === 'user' ? 'Counselor' : scenario.name}: ${msg.text}`).join('\n')}
@@ -227,7 +268,15 @@ ${chatHistory.map(msg => `${msg.sender === 'user' ? 'Counselor' : scenario.name}
             }
             
             setFeedback(data.feedback);
-            onExerciseComplete();
+            
+            const scoreMatch = data.feedback.match(/\*\*Punteggio:\*\*\s*(\d+)/);
+            const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
+
+            if (mode === 'client') {
+                 onExerciseComplete(score, TOOL_ID, scenario.id);
+            } else {
+                 onExerciseComplete(score);
+            }
         } catch (e) {
             console.error(e);
             const errorMessage = e instanceof Error ? e.message : "Si è verificato un errore sconosciuto. Riprova.";
@@ -273,10 +322,15 @@ ${chatHistory.map(msg => `${msg.sender === 'user' ? 'Counselor' : scenario.name}
                 Cambia modalità
             </button>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Dialogo con il Cliente</h1>
+             {showResetMessage && (
+                <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 my-4 rounded-r-lg" role="alert">
+                    <p>Complimenti, hai completato tutti gli scenari! Ora te li riproporremo per continuare a esercitarti.</p>
+                </div>
+            )}
             <div className="relative bg-amber-50 border-l-4 border-amber-500 text-amber-900 p-4 rounded-r-lg mb-6">
                 <p className="font-semibold">Obiettivo Vago del Cliente:</p>
                 <p className="text-lg italic">"{scenario.name} {scenario.goal}"</p>
-                <button onClick={setNewScenario} disabled={isLoading} className="absolute top-1/2 right-4 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors text-gray-600 disabled:bg-gray-200" title="Nuovo Scenario"><RefreshIcon /></button>
+                <button onClick={setNewScenario} disabled={isLoading || isClientTyping} className="absolute top-1/2 right-4 -translate-y-1/2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors text-gray-600 disabled:bg-gray-200" title="Nuovo Scenario"><RefreshIcon /></button>
             </div>
 
             <div ref={chatContainerRef} className="h-80 overflow-y-auto bg-gray-100 rounded-lg p-4 space-y-4 mb-4 border">

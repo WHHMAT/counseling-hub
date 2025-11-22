@@ -8,12 +8,15 @@ import VissiTool from './components/VissiTool';
 import PhenomenologicalFeedbackTool from './components/PhenomenologicalFeedbackTool';
 import SmartGoalTool from './components/SmartGoalTool';
 import SelfAssessmentHub from './components/SelfAssessmentHub';
+import EisenhowerMatrixTool from './components/EisenhowerMatrixTool';
+import VisionTool from './components/VisionTool';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
 import Header from './components/Header';
 import AuthPage from './components/AuthPage';
 import ProfilePage from './components/ProfilePage';
 import { useAuth } from './hooks/useAuth';
+import { useUserData } from './hooks/useUserData';
 import { db } from './firebase';
 import firebase from './firebase';
 
@@ -23,10 +26,10 @@ const App: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [showDonationPopup, setShowDonationPopup] = useState(false);
   const { user } = useAuth();
+  const { userData } = useUserData();
 
-  const handleExerciseComplete = async () => {
+  const handleExerciseComplete = async (points: number, toolId?: string, exerciseId?: string | number) => {
     if (!user) {
-        // Per gli utenti non loggati, gestiamo un contatore temporaneo per il popup
         const anonCount = parseInt(sessionStorage.getItem('anonExerciseCount') || '0', 10) + 1;
         sessionStorage.setItem('anonExerciseCount', anonCount.toString());
         if (anonCount > 0 && anonCount % 5 === 0) {
@@ -43,14 +46,21 @@ const App: React.FC = () => {
                 console.error("User document does not exist!");
                 return;
             }
+            
             const data = doc.data();
             const currentCount = data?.exerciseCount || 0;
             const newCount = currentCount + 1;
-            
-            transaction.update(userRef, {
+
+            const updates: any = {
                 exerciseCount: firebase.firestore.FieldValue.increment(1),
-                points: firebase.firestore.FieldValue.increment(10) // Aggiungi 10 punti per esercizio
-            });
+                points: firebase.firestore.FieldValue.increment(points)
+            };
+
+            if (toolId && (exerciseId || exerciseId === 0)) {
+                 updates[`completedExercises.${toolId}`] = firebase.firestore.FieldValue.arrayUnion(exerciseId);
+            }
+            
+            transaction.update(userRef, updates);
             
             if (newCount > 0 && newCount % 5 === 0) {
                 setShowDonationPopup(true);
@@ -83,19 +93,23 @@ const App: React.FC = () => {
       return <ProfilePage onGoHome={handleGoHome} />;
     }
     if (activeView === 'rogerian-reformulation') {
-      return <RolePlayingTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+      return <RolePlayingTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
     } else if (activeView === 'rapport-pacing') {
-      return <RapportTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+      return <RapportTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
     } else if (activeView === 'maslow-pyramid') {
-      return <MaslowTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+      return <MaslowTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
     } else if (activeView === 'vissi-explorer') {
-      return <VissiTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+      return <VissiTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
     } else if (activeView === 'phenomenological-feedback') {
-      return <PhenomenologicalFeedbackTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+      return <PhenomenologicalFeedbackTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
     } else if (activeView === 'smart-goal') {
-      return <SmartGoalTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+      return <SmartGoalTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+    } else if (activeView === 'eisenhower-matrix') {
+        return <EisenhowerMatrixTool onGoHome={handleGoHome} onExerciseComplete={() => handleExerciseComplete(10, 'eisenhower-matrix', 1)} />;
+    } else if (activeView === 'vision-crafting') {
+        return <VisionTool onGoHome={handleGoHome} onExerciseComplete={() => handleExerciseComplete(20, 'vision-crafting', 1)} />;
     } else if (activeView === 'self-assessment-hub') {
-      return <SelfAssessmentHub onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} />;
+      return <SelfAssessmentHub onGoHome={handleGoHome} onExerciseComplete={() => handleExerciseComplete(0)} />;
     }
     
     // Schermata principale con gli strumenti

@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useUserData } from '../hooks/useUserData';
+import { db } from '../firebase';
+import firebase from '../firebase';
+
+const TOOL_ID = 'phenomenological-feedback';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -38,10 +43,11 @@ const SCENARIOS = [
 
 interface PhenomenologicalFeedbackToolProps {
   onGoHome: () => void;
-  onExerciseComplete: () => void;
+  onExerciseComplete: (points: number, toolId: string, exerciseId: number) => void;
+  userData: ReturnType<typeof useUserData>['userData'];
 }
 
-const PhenomenologicalFeedbackTool: React.FC<PhenomenologicalFeedbackToolProps> = ({ onGoHome, onExerciseComplete }) => {
+const PhenomenologicalFeedbackTool: React.FC<PhenomenologicalFeedbackToolProps> = ({ onGoHome, onExerciseComplete, userData }) => {
     const [scenario, setScenario] = useState(SCENARIOS[0]);
     const [seenHeard, setSeenHeard] = useState('');
     const [thought, setThought] = useState('');
@@ -49,23 +55,45 @@ const PhenomenologicalFeedbackTool: React.FC<PhenomenologicalFeedbackToolProps> 
     const [feedback, setFeedback] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showResetMessage, setShowResetMessage] = useState(false);
 
-    const setNewScenario = () => {
+    const resetUserProgressForTool = async () => {
+        if (userData && firebase.auth().currentUser) {
+            const userRef = db.collection('users').doc(firebase.auth().currentUser.uid);
+            await userRef.update({
+                [`completedExercises.${TOOL_ID}`]: []
+            });
+        }
+    };
+
+    const setNewScenario = async () => {
         setSeenHeard('');
         setThought('');
         setFelt('');
         setFeedback('');
         setError('');
-        let newScenario;
-        do {
-            newScenario = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
-        } while (newScenario.id === scenario.id);
-        setScenario(newScenario);
+
+        const completedScenarios = userData?.completedExercises?.[TOOL_ID] || [];
+        let availableScenarios = SCENARIOS.filter(s => !completedScenarios.includes(s.id));
+
+        if (availableScenarios.length === 0 && SCENARIOS.length > 0) {
+            setShowResetMessage(true);
+            setTimeout(() => setShowResetMessage(false), 4000);
+            await resetUserProgressForTool();
+            availableScenarios = SCENARIOS;
+        }
+
+        if (availableScenarios.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableScenarios.length);
+            setScenario(availableScenarios[randomIndex]);
+        } else {
+            setScenario({ id: 0, text: "Nessuno scenario disponibile.", cues: "" });
+        }
     };
 
     useEffect(() => {
         setNewScenario();
-    }, []);
+    }, [userData]);
 
     const handleGenerateFeedback = async () => {
         if (!seenHeard.trim() || !thought.trim() || !felt.trim()) {
@@ -110,6 +138,9 @@ Valuta se lo studente ha espresso un'emozione genuina e se l'ha "posseduta" (usa
 **Suggerimento Migliorativo:**
 Offri un esempio concreto e conciso di come una delle tre parti avrebbe potuto essere formulata in modo ancora più efficace e aderente ai principi.
 
+**Punteggio:**
+Assegna un punteggio numerico: 10 se tutti e tre i pilastri sono formulati in modo eccellente e fenomenologico; 5 se uno o due pilastri sono ben formulati ma uno contiene interpretazioni o giudizi; 0 se il feedback è prevalentemente interpretativo o giudicante.
+
 ---`;
 
         try {
@@ -126,7 +157,11 @@ Offri un esempio concreto e conciso di come una delle tre parti avrebbe potuto e
             }
 
             setFeedback(data.feedback);
-            onExerciseComplete();
+            
+            const scoreMatch = data.feedback.match(/\*\*Punteggio:\*\*\s*(\d+)/);
+            const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
+            
+            onExerciseComplete(score, TOOL_ID, scenario.id);
         } catch (e) {
             console.error(e);
             const errorMessage = e instanceof Error ? e.message : "Si è verificato un errore sconosciuto. Riprova.";
@@ -157,6 +192,12 @@ Offri un esempio concreto e conciso di come una delle tre parti avrebbe potuto e
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Pratica di Feedback Fenomenologico</h1>
                     <p className="text-gray-600 mb-6">Leggi lo scenario e formula un feedback basato sui tre pilastri: dati, pensieri e sentimenti.</p>
 
+                    {showResetMessage && (
+                        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-lg" role="alert">
+                            <p>Complimenti, hai completato tutti gli scenari! Ora te li riproporremo per continuare a esercitarti.</p>
+                        </div>
+                    )}
+                    
                     <div className="relative bg-sky-50 border-l-4 border-sky-500 text-sky-800 p-4 rounded-r-lg mb-6">
                         <p className="font-semibold">Scenario del Cliente:</p>
                         <p className="italic">"{scenario.text}"</p>

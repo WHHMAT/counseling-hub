@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useUserData } from '../hooks/useUserData';
+import { db } from '../firebase';
+import firebase from '../firebase';
+
+const TOOL_ID = 'rapport-pacing';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -33,31 +38,52 @@ const CLIENT_SITUATIONS = [
 
 interface RapportToolProps {
   onGoHome: () => void;
-  onExerciseComplete: () => void;
+  onExerciseComplete: (points: number, toolId: string, exerciseId: string) => void;
+  userData: ReturnType<typeof useUserData>['userData'];
 }
 
-const RapportTool: React.FC<RapportToolProps> = ({ onGoHome, onExerciseComplete }) => {
+const RapportTool: React.FC<RapportToolProps> = ({ onGoHome, onExerciseComplete, userData }) => {
     const [clientSituation, setClientSituation] = useState<{ sentence: string; cue: string } | null>(null);
     const [studentResponse, setStudentResponse] = useState('');
     const [feedback, setFeedback] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showResetMessage, setShowResetMessage] = useState(false);
 
     useEffect(() => {
         setNewSituation();
-    }, []);
+    }, [userData]);
 
-    const setNewSituation = () => {
+    const resetUserProgressForTool = async () => {
+        if (userData && firebase.auth().currentUser) {
+            const userRef = db.collection('users').doc(firebase.auth().currentUser.uid);
+            await userRef.update({
+                [`completedExercises.${TOOL_ID}`]: []
+            });
+        }
+    };
+
+    const setNewSituation = async () => {
         setFeedback('');
         setStudentResponse('');
         setError('');
-        const randomIndex = Math.floor(Math.random() * CLIENT_SITUATIONS.length);
-        let newSituation = CLIENT_SITUATIONS[randomIndex];
-        if (CLIENT_SITUATIONS.length > 1 && newSituation === clientSituation) {
-            const newIndex = (randomIndex + 1) % CLIENT_SITUATIONS.length;
-            newSituation = CLIENT_SITUATIONS[newIndex];
+
+        const completedSituations = userData?.completedExercises?.[TOOL_ID] as string[] || [];
+        let availableSituations = CLIENT_SITUATIONS.filter(s => !completedSituations.includes(s.sentence));
+
+        if (availableSituations.length === 0 && CLIENT_SITUATIONS.length > 0) {
+            setShowResetMessage(true);
+            setTimeout(() => setShowResetMessage(false), 4000);
+            await resetUserProgressForTool();
+            availableSituations = CLIENT_SITUATIONS;
         }
-        setClientSituation(newSituation);
+        
+        if (availableSituations.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableSituations.length);
+            setClientSituation(availableSituations[randomIndex]);
+        } else {
+            setClientSituation({ sentence: "Nessuna situazione disponibile.", cue: "" });
+        }
     };
 
     const handleGenerateFeedback = async () => {
@@ -99,6 +125,9 @@ Identifica 1-2 aspetti che potrebbero essere migliorati. Sii specifico e costrut
 **Suggerimenti Pratici:**
 Offri 1-2 esempi alternativi di risposta che integrino più livelli di ricalco, spiegando brevemente la strategia. (Es: "Un'alternativa potrebbe essere: '(Abbassando leggermente il tono di voce) Quando vedi tutto così nero... dev'essere davvero pesante.' Questo ricalca sia il verbale ('nero') che il para-verbale ('voce bassa').").
 
+**Punteggio:**
+Assegna un punteggio numerico: 10 per un ricalco eccellente su più livelli; 5 per un buon ricalco verbale che però tralascia il non verbale/para-verbale, o viceversa; 0 se la risposta non è un ricalco ma cade in una trappola (es. soluzione, giudizio).
+
 ---
 **Situazione del Cliente:**
 - **Frase:** "${clientSituation.sentence}"
@@ -122,7 +151,11 @@ Offri 1-2 esempi alternativi di risposta che integrino più livelli di ricalco, 
             }
 
             setFeedback(data.feedback);
-            onExerciseComplete();
+
+            const scoreMatch = data.feedback.match(/\*\*Punteggio:\*\*\s*(\d+)/);
+            const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
+            
+            onExerciseComplete(score, TOOL_ID, clientSituation.sentence);
 
         } catch (e) {
             console.error(e);
@@ -180,6 +213,12 @@ Offri 1-2 esempi alternativi di risposta che integrino più livelli di ricalco, 
                 <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Esercizio di Rapport: Ricalco e Rispecchiamento</h1>
                     <p className="text-gray-600 mb-6">Analizza la frase del cliente, includendo il dettaglio non verbale, e scrivi una risposta per costruire il rapport.</p>
+                    
+                    {showResetMessage && (
+                        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-r-lg" role="alert">
+                            <p>Complimenti, hai completato tutte le situazioni! Ora te le riproporremo per continuare a esercitarti.</p>
+                        </div>
+                    )}
 
                     {clientSituation && (
                         <div className="relative bg-sky-50 border-l-4 border-sky-500 text-sky-800 p-4 rounded-r-lg mb-6">
