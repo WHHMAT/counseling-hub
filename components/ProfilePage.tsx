@@ -3,7 +3,9 @@ import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
 import { StarIcon, ClockIcon, TrophyIcon, CameraIcon } from './icons';
 import { storage, db } from '../firebase';
-import { TOOLS } from '../constants';
+// FIX: The 'TOOLS' export was not found in '../constants'.
+// To resolve this, PROFESSIONAL_TOOLS and PERSONAL_TOOLS are imported and combined.
+import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS } from '../constants';
 import { EXERCISE_COUNTS } from '../data/exerciseCounts';
 
 
@@ -34,6 +36,8 @@ const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string |
 interface ProfilePageProps {
     onGoHome: () => void;
 }
+
+const TOOLS = [...PROFESSIONAL_TOOLS, ...PERSONAL_TOOLS];
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
     const { user } = useAuth();

@@ -12,4 +12,5 @@ export const EXERCISE_COUNTS: Record<string, number> = {
   'smart-goal': 5,
   'eisenhower-matrix': 1,
   'vision-crafting': 1,
+  'wheel-of-life': 1,
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TOOLS } from './constants';
+import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS } from './constants';
 import ToolCard from './components/ToolCard';
 import RolePlayingTool from './components/RolePlayingTool';
 import RapportTool from './components/RapportTool';
@@ -10,6 +10,7 @@ import SmartGoalTool from './components/SmartGoalTool';
 import SelfAssessmentHub from './components/SelfAssessmentHub';
 import EisenhowerMatrixTool from './components/EisenhowerMatrixTool';
 import VisionTool from './components/VisionTool';
+import WheelOfLifeTool from './components/WheelOfLifeTool';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
 import Header from './components/Header';
@@ -19,6 +20,35 @@ import { useAuth } from './hooks/useAuth';
 import { useUserData } from './hooks/useUserData';
 import { db } from './firebase';
 import firebase from './firebase';
+import { BriefcaseIcon, SparklesIcon } from './components/icons';
+
+const ArrowLeftIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    </svg>
+);
+
+interface HubCardProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  colorClass: string;
+}
+
+const HubCard: React.FC<HubCardProps> = ({ title, description, icon, onClick, colorClass }) => (
+    <div
+        onClick={onClick}
+        className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center transform hover:-translate-y-2 transition-transform duration-300 ease-in-out cursor-pointer"
+    >
+        <div className={`rounded-full p-5 mb-6 ${colorClass}`}>
+            {React.cloneElement(icon as React.ReactElement, { className: "h-12 w-12 text-white" })}
+        </div>
+        <h3 className="text-2xl font-bold text-gray-800 mb-3">{title}</h3>
+        <p className="text-gray-600 flex-grow">{description}</p>
+    </div>
+);
+
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<string | null>(null);
@@ -89,30 +119,71 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
+    const isProfessionalTool = PROFESSIONAL_TOOLS.some(tool => tool.id === activeView);
+    const isPersonalTool = PERSONAL_TOOLS.some(tool => tool.id === activeView);
+
+    if (isProfessionalTool || isPersonalTool) {
+        const onGoBackToHub = () => setActiveView(isProfessionalTool ? 'professional-hub' : 'personal-hub');
+        
+        if (activeView === 'rogerian-reformulation') {
+          return <RolePlayingTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        } else if (activeView === 'rapport-pacing') {
+          return <RapportTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        } else if (activeView === 'maslow-pyramid') {
+          return <MaslowTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        } else if (activeView === 'vissi-explorer') {
+          return <VissiTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        } else if (activeView === 'phenomenological-feedback') {
+          return <PhenomenologicalFeedbackTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        } else if (activeView === 'smart-goal') {
+          return <SmartGoalTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        } else if (activeView === 'eisenhower-matrix') {
+            return <EisenhowerMatrixTool onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(10, 'eisenhower-matrix', 1)} />;
+        } else if (activeView === 'vision-crafting') {
+            return <VisionTool onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(20, 'vision-crafting', 1)} />;
+        } else if (activeView === 'wheel-of-life') {
+            return <WheelOfLifeTool onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(15, 'wheel-of-life', 1)} />;
+        } else if (activeView === 'self-assessment-hub') {
+          return <SelfAssessmentHub onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(0)} />;
+        }
+    }
+
     if (activeView === 'profile') {
       return <ProfilePage onGoHome={handleGoHome} />;
     }
-    if (activeView === 'rogerian-reformulation') {
-      return <RolePlayingTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
-    } else if (activeView === 'rapport-pacing') {
-      return <RapportTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
-    } else if (activeView === 'maslow-pyramid') {
-      return <MaslowTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
-    } else if (activeView === 'vissi-explorer') {
-      return <VissiTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
-    } else if (activeView === 'phenomenological-feedback') {
-      return <PhenomenologicalFeedbackTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
-    } else if (activeView === 'smart-goal') {
-      return <SmartGoalTool onGoHome={handleGoHome} onExerciseComplete={handleExerciseComplete} userData={userData} />;
-    } else if (activeView === 'eisenhower-matrix') {
-        return <EisenhowerMatrixTool onGoHome={handleGoHome} onExerciseComplete={() => handleExerciseComplete(10, 'eisenhower-matrix', 1)} />;
-    } else if (activeView === 'vision-crafting') {
-        return <VisionTool onGoHome={handleGoHome} onExerciseComplete={() => handleExerciseComplete(20, 'vision-crafting', 1)} />;
-    } else if (activeView === 'self-assessment-hub') {
-      return <SelfAssessmentHub onGoHome={handleGoHome} onExerciseComplete={() => handleExerciseComplete(0)} />;
+
+    if (activeView === 'professional-hub' || activeView === 'personal-hub') {
+        const isProfessional = activeView === 'professional-hub';
+        const hubTitle = isProfessional ? "Strumenti di Crescita Professionale" : "Strumenti di Crescita Personale";
+        const hubDescription = isProfessional 
+            ? "Esercizi mirati per affinare le tue competenze tecniche come counselor." 
+            : "Percorsi per esplorare te stesso e migliorare il tuo benessere personale.";
+        const toolsToShow = isProfessional ? PROFESSIONAL_TOOLS : PERSONAL_TOOLS;
+
+        return (
+            <main className="container mx-auto px-4 py-12 sm:py-20">
+                <button onClick={() => setActiveView(null)} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
+                    <ArrowLeftIcon />
+                    Torna alla scelta
+                </button>
+                <header className="text-center mb-16">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+                        {hubTitle}
+                    </h1>
+                    <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+                        {hubDescription}
+                    </p>
+                </header>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {toolsToShow.map((tool) => (
+                        <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
+                    ))}
+                </div>
+            </main>
+        );
     }
-    
-    // Schermata principale con gli strumenti
+
+    // Main Home Screen
     return (
         <main className="container mx-auto px-4 py-12 sm:py-20">
             <header className="text-center mb-16">
@@ -121,14 +192,25 @@ const App: React.FC = () => {
                 <span className="block text-sky-600">per Counselor</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-                Seleziona uno strumento per iniziare a esercitarti e a sviluppare le tue abilità di counseling.
+                Scegli il tuo percorso di crescita. Sviluppa le tue abilità professionali o esplora il tuo mondo interiore.
             </p>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {TOOLS.map((tool) => (
-                <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                 <HubCard
+                    title="Crescita Professionale"
+                    description="Affina le tecniche di counseling, impara a gestire scenari complessi e migliora le tue abilità di ascolto e riformulazione."
+                    icon={<BriefcaseIcon />}
+                    onClick={() => setActiveView('professional-hub')}
+                    colorClass="bg-sky-600"
+                />
+                <HubCard
+                    title="Crescita Personale"
+                    description="Esplora te stesso attraverso strumenti di autovalutazione, definisci i tuoi obiettivi e trova un maggiore equilibrio nella tua vita."
+                    icon={<SparklesIcon />}
+                    onClick={() => setActiveView('personal-hub')}
+                    colorClass="bg-amber-500"
+                />
             </div>
             
             <section className="mt-24 max-w-2xl mx-auto">

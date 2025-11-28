@@ -1,8 +1,8 @@
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon } from './components/icons';
 
-export const TOOLS: Tool[] = [
+export const PROFESSIONAL_TOOLS: Tool[] = [
   {
     id: 'rogerian-reformulation',
     title: 'Partner di Riformulazione',
@@ -16,14 +16,6 @@ export const TOOLS: Tool[] = [
     title: 'Pratica del Rapport',
     description: 'Allenati a costruire il rapport con il cliente attraverso la tecnica del ricalco. Esplora diverse modalità di mirroring per creare una connessione empatica.',
     icon: <LinkIcon />,
-    actionText: 'Inizia Esercizio',
-    comingSoon: false,
-  },
-   {
-    id: 'maslow-pyramid',
-    title: 'Piramide di Maslow',
-    description: "Leggi la storia di un cliente e identifica i suoi bisogni secondo la gerarchia di Maslow. Ricevi un'analisi dettagliata sulla tua valutazione.",
-    icon: <PyramidIcon />,
     actionText: 'Inizia Esercizio',
     comingSoon: false,
   },
@@ -44,11 +36,38 @@ export const TOOLS: Tool[] = [
     comingSoon: false,
   },
   {
+    id: 'case-studies',
+    title: 'Analisi di Casi Studio',
+    description: 'Analizza scenari complessi di casi studio e sviluppa piani di trattamento efficaci. Ricevi feedback sulla tua analisi.',
+    icon: <ClipboardListIcon />,
+    actionText: 'Analizza un Caso',
+    comingSoon: true,
+  },
+];
+
+export const PERSONAL_TOOLS: Tool[] = [
+  {
+    id: 'maslow-pyramid',
+    title: 'Piramide di Maslow',
+    description: "Leggi la storia di un cliente e identifica i suoi bisogni secondo la gerarchia di Maslow. Ricevi un'analisi dettagliata sulla tua valutazione.",
+    icon: <PyramidIcon />,
+    actionText: 'Inizia Esercizio',
+    comingSoon: false,
+  },
+  {
     id: 'smart-goal',
     title: 'Obiettivo SMART',
     description: 'Impara a definire obiettivi ben formati con il cliente utilizzando il modello S.M.A.R.T. (Specifico, Misurabile, Raggiungibile, Rilevante, Temporizzato).',
     icon: <TargetIcon />,
     actionText: 'Definisci un Obiettivo',
+    comingSoon: false,
+  },
+  {
+    id: 'wheel-of-life',
+    title: 'La Ruota della Vita',
+    description: 'Visualizza l\'equilibrio della tua vita. Valuta la tua soddisfazione in 8 aree chiave e ottieni spunti per la tua crescita personale.',
+    icon: <WheelIcon />,
+    actionText: 'Inizia Valutazione',
     comingSoon: false,
   },
   {
@@ -74,13 +93,5 @@ export const TOOLS: Tool[] = [
     icon: <ClipboardCheckIcon />,
     actionText: 'Scegli un Test',
     comingSoon: false,
-  },
-  {
-    id: 'case-studies',
-    title: 'Analisi di Casi Studio',
-    description: 'Analizza scenari complessi di casi studio e sviluppa piani di trattamento efficaci. Ricevi feedback sulla tua analisi.',
-    icon: <ClipboardListIcon />,
-    actionText: 'Analizza un Caso',
-    comingSoon: true,
   },
 ];
