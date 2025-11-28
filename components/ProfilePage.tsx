@@ -192,6 +192,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
                     />
                 </div>
 
+                {userData.personalVision && (
+                    <div className="mt-10">
+                        <h2 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">La Tua Vision Personale</h2>
+                        <div className="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-lg">
+                            <p className="text-lg italic text-amber-900">"{userData.personalVision}"</p>
+                        </div>
+                    </div>
+                )}
+
                 <div className="mt-10">
                     <h2 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">Progresso per Strumento</h2>
                     <div className="space-y-5">

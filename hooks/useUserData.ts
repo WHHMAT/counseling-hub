@@ -13,6 +13,7 @@ export interface UserData {
     rank: string;
     createdAt: firebase.firestore.Timestamp;
     completedExercises?: Record<string, (string | number)[]>;
+    personalVision?: string;
 }
 
 export function useUserData() {

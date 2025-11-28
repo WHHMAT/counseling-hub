@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { auth, db } from '../firebase';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -44,6 +45,8 @@ const VisionTool: React.FC<VisionToolProps> = ({ onGoHome, onExerciseComplete })
     const [drafts, setDrafts] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
 
     const handleNext = () => setStep(s => s + 1);
     const handleBack = () => setStep(s => s - 1);
@@ -93,15 +96,43 @@ Crea 3 bozze di vision statement in formato Markdown, come elenco numerato.`;
         }
     };
 
-    const handleFinish = () => {
+    const handleFinish = async () => {
         if (!finalVision.trim()) {
             setError("Per favore, definisci la tua vision prima di concludere.");
             return;
         }
-        onExerciseComplete();
-        alert("Congratulazioni! Hai definito la tua vision. Ricorda di rivederla periodicamente per assicurarti che sia sempre allineata con te.");
-        onGoHome();
+        setIsSaving(true);
+        setError('');
+        
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const userRef = db.collection('users').doc(user.uid);
+                await userRef.set({
+                    personalVision: finalVision
+                }, { merge: true });
+            }
+            onExerciseComplete();
+            alert("Congratulazioni! La tua vision è stata salvata nel tuo profilo. Ricorda di rivederla periodicamente per assicurarti che sia sempre allineata con te.");
+            onGoHome();
+        } catch (err) {
+            console.error("Error saving vision:", err);
+            setError("Si è verificato un errore durante il salvataggio della tua vision. Riprova.");
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    const SummaryComponent = () => (
+         <div className="space-y-4 bg-gray-50 p-4 rounded-lg border">
+            {VISION_STEPS.map(s => (
+                <div key={s.id}>
+                    <h3 className="font-bold text-sky-800">{s.title}</h3>
+                    <p className="text-gray-700 whitespace-pre-wrap">{visionData[s.id as keyof VisionData] || "Nessuna riflessione inserita."}</p>
+                </div>
+            ))}
+        </div>
+    );
 
     const renderIntro = () => (
         <div className="text-center">
@@ -151,14 +182,7 @@ Crea 3 bozze di vision statement in formato Markdown, come elenco numerato.`;
         <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 text-center">Sintesi delle tue Riflessioni</h1>
             <p className="text-gray-600 mb-6 text-center">Ottimo lavoro! Ecco un riepilogo di ciò che hai esplorato. Ora useremo queste intuizioni per creare la tua vision.</p>
-            <div className="space-y-4 bg-gray-50 p-4 rounded-lg border">
-                {VISION_STEPS.map(s => (
-                    <div key={s.id}>
-                        <h3 className="font-bold text-sky-800">{s.title}</h3>
-                        <p className="text-gray-700 whitespace-pre-wrap">{visionData[s.id as keyof VisionData] || "Nessuna riflessione inserita."}</p>
-                    </div>
-                ))}
-            </div>
+            <SummaryComponent />
             <div className="flex justify-between mt-6">
                  <button onClick={handleBack} className="bg-gray-200 text-gray-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition-colors">
                     Modifica
@@ -176,7 +200,7 @@ Crea 3 bozze di vision statement in formato Markdown, come elenco numerato.`;
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 text-center">Crea la tua Vision Statement</h1>
             <p className="text-gray-600 mb-6 text-center">Ecco alcune bozze create dall'AI. Usale come ispirazione per scrivere la tua vision finale nel box qui sotto.</p>
             
-            <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+            <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-8">
                 <h3 className="font-bold text-amber-900 mb-2">Bozze dall'AI:</h3>
                 <ul className="space-y-2">
                     {drafts.map((draft, index) => (
@@ -186,6 +210,13 @@ Crea 3 bozze di vision statement in formato Markdown, come elenco numerato.`;
                     ))}
                 </ul>
             </div>
+
+            <details className="bg-gray-50 rounded-lg border mb-8">
+                <summary className="p-4 font-semibold cursor-pointer text-sky-800">Mostra/Nascondi le mie riflessioni</summary>
+                <div className="p-4 border-t">
+                    <SummaryComponent />
+                </div>
+            </details>
 
             <div className="mt-8">
                 <label htmlFor="final-vision" className="block text-xl font-bold text-gray-700 mb-2 text-center">La mia Vision Personale:</label>
@@ -203,8 +234,8 @@ Crea 3 bozze di vision statement in formato Markdown, come elenco numerato.`;
                 <button onClick={handleBack} className="bg-gray-200 text-gray-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition-colors">
                     Indietro
                 </button>
-                 <button onClick={handleFinish} className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold transition-all hover:bg-green-700 shadow-md hover:shadow-lg">
-                    Ho definito la mia Vision!
+                 <button onClick={handleFinish} disabled={isSaving} className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold transition-all hover:bg-green-700 shadow-md hover:shadow-lg disabled:bg-gray-400">
+                    {isSaving ? 'Salvataggio...' : 'Salva la mia Vision!'}
                 </button>
             </div>
         </div>
