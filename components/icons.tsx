@@ -137,3 +137,32 @@ export const SparklesIcon: React.FC<{ className?: string }> = ({ className = "h-
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
     </svg>
 );
+
+export const PencilAltIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+);
+
+export const HandshakeIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20l4-4-4-4m-7 8l-4-4 4-4m3 8l4-4-4-4m-7 8l-4-4 4-4m-1 8h12" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l-4 14" />
+        <path d="M18 9.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0zM12 21a9 9 0 0 0 9-9h-2.11a7 7 0 0 1-13.78 0H3a9 9 0 0 0 9 9z" />
+        <path d="M17.5 9.5a1 1 0 11-2 0 1 1 0 012 0zM8.5 9.5a1 1 0 11-2 0 1 1 0 012 0z" />
+        <path d="M5.02 17.52c.8-.8 1.9-1.3 3.1-1.3h7.76c1.2 0 2.3.5 3.1 1.3" />
+        <path d="M9 20h6" />
+    </svg>
+);
+
+export const UserIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+);
+
+export const OfficeBuildingIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-4h1m-1 4h1m-1-4h1" />
+    </svg>
+);

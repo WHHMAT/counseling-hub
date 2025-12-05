@@ -10,7 +10,9 @@ export const EXERCISE_COUNTS: Record<string, number> = {
   'vissi-explorer': 7,
   'phenomenological-feedback': 3,
   'smart-goal': 5,
+  'gordon-method': 3,
   'eisenhower-matrix': 1,
   'vision-crafting': 1,
   'wheel-of-life': 1,
+  'personal-diary': 50,
 };

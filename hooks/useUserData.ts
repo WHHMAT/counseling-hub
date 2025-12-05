@@ -14,6 +14,9 @@ export interface UserData {
     createdAt: firebase.firestore.Timestamp;
     completedExercises?: Record<string, (string | number)[]>;
     personalVision?: string;
+    userType?: string;
+    referralCode?: string;
+    schoolAffiliation?: string;
 }
 
 export function useUserData() {

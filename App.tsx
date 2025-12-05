@@ -11,6 +11,8 @@ import SelfAssessmentHub from './components/SelfAssessmentHub';
 import EisenhowerMatrixTool from './components/EisenhowerMatrixTool';
 import VisionTool from './components/VisionTool';
 import WheelOfLifeTool from './components/WheelOfLifeTool';
+import PersonalDiaryTool from './components/PersonalDiaryTool';
+import GordonMethodTool from './components/GordonMethodTool';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
 import Header from './components/Header';
@@ -143,6 +145,10 @@ const App: React.FC = () => {
             return <VisionTool onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(20, 'vision-crafting', 1)} />;
         } else if (activeView === 'wheel-of-life') {
             return <WheelOfLifeTool onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(15, 'wheel-of-life', 1)} />;
+        } else if (activeView === 'personal-diary') {
+            return <PersonalDiaryTool onGoHome={onGoBackToHub} onExerciseComplete={(entryId) => handleExerciseComplete(15, 'personal-diary', entryId)} />;
+        } else if (activeView === 'gordon-method') {
+            return <GordonMethodTool onGoHome={onGoBackToHub} onExerciseComplete={(scenarioId) => handleExerciseComplete(10, 'gordon-method', scenarioId)} />;
         } else if (activeView === 'self-assessment-hub') {
           return <SelfAssessmentHub onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(0)} />;
         }

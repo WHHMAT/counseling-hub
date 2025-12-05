@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon, PencilAltIcon, HandshakeIcon } from './components/icons';
 
 export const PROFESSIONAL_TOOLS: Tool[] = [
   {
@@ -46,6 +46,22 @@ export const PROFESSIONAL_TOOLS: Tool[] = [
 ];
 
 export const PERSONAL_TOOLS: Tool[] = [
+  {
+    id: 'gordon-method',
+    title: 'Metodo Gordon per Conflitti',
+    description: 'Impara a risolvere i conflitti in modo costruttivo attraverso un role-play guidato in 6 fasi. Sviluppa l\'ascolto attivo e la negoziazione.',
+    icon: <HandshakeIcon />,
+    actionText: 'Inizia Esercizio',
+    comingSoon: false,
+  },
+  {
+    id: 'personal-diary',
+    title: 'Diario Personale',
+    description: 'Uno spazio guidato e sicuro per la scrittura riflessiva. Trasforma gli eventi quotidiani in consapevolezza e crescita personale.',
+    icon: <PencilAltIcon />,
+    actionText: 'Apri il Diario',
+    comingSoon: false,
+  },
   {
     id: 'maslow-pyramid',
     title: 'Piramide di Maslow',
