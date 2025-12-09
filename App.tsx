@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS } from './constants';
+import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS, PNL_TOOLS, ROGERIAN_TOOLS } from './constants';
 import ToolCard from './components/ToolCard';
 import RolePlayingTool from './components/RolePlayingTool';
 import RapportTool from './components/RapportTool';
@@ -13,6 +13,7 @@ import VisionTool from './components/VisionTool';
 import WheelOfLifeTool from './components/WheelOfLifeTool';
 import PersonalDiaryTool from './components/PersonalDiaryTool';
 import GordonMethodTool from './components/GordonMethodTool';
+import NlpMapTool from './components/NlpMapTool';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
 import Header from './components/Header';
@@ -121,41 +122,104 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    const isProfessionalTool = PROFESSIONAL_TOOLS.some(tool => tool.id === activeView);
+    const isProfessionalTool = PROFESSIONAL_TOOLS.some(tool => tool.id === activeView && tool.id !== 'nlp-hub' && tool.id !== 'rogerian-hub');
     const isPersonalTool = PERSONAL_TOOLS.some(tool => tool.id === activeView);
+    const isNlpTool = PNL_TOOLS.some(tool => tool.id === activeView);
+    const isRogerianTool = ROGERIAN_TOOLS.some(tool => tool.id === activeView);
 
-    if (isProfessionalTool || isPersonalTool) {
-        const onGoBackToHub = () => setActiveView(isProfessionalTool ? 'professional-hub' : 'personal-hub');
-        
+    if (isNlpTool) {
+        const onGoBack = () => setActiveView('nlp-hub');
+        if (activeView === 'rapport-pacing') {
+          return <RapportTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        }
+        if (activeView === 'nlp-client-map') {
+            return <NlpMapTool onGoHome={onGoBack} onExerciseComplete={(scenarioId) => handleExerciseComplete(15, 'nlp-client-map', scenarioId)} userData={userData} />;
+        }
+    }
+    
+    if (isRogerianTool) {
+        const onGoBack = () => setActiveView('rogerian-hub');
         if (activeView === 'rogerian-reformulation') {
-          return <RolePlayingTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
-        } else if (activeView === 'rapport-pacing') {
-          return <RapportTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
-        } else if (activeView === 'maslow-pyramid') {
-          return <MaslowTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+          return <RolePlayingTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
         } else if (activeView === 'vissi-explorer') {
-          return <VissiTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+          return <VissiTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
         } else if (activeView === 'phenomenological-feedback') {
-          return <PhenomenologicalFeedbackTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+          return <PhenomenologicalFeedbackTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        }
+    }
+    
+    if (isProfessionalTool || isPersonalTool) {
+        const onGoBack = () => setActiveView(isProfessionalTool ? 'professional-hub' : 'personal-hub');
+        
+        if (activeView === 'maslow-pyramid') {
+          return <MaslowTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
         } else if (activeView === 'smart-goal') {
-          return <SmartGoalTool onGoHome={onGoBackToHub} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+          return <SmartGoalTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
         } else if (activeView === 'eisenhower-matrix') {
-            return <EisenhowerMatrixTool onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(10, 'eisenhower-matrix', 1)} />;
+            return <EisenhowerMatrixTool onGoHome={onGoBack} onExerciseComplete={() => handleExerciseComplete(10, 'eisenhower-matrix', 1)} />;
         } else if (activeView === 'vision-crafting') {
-            return <VisionTool onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(20, 'vision-crafting', 1)} />;
+            return <VisionTool onGoHome={onGoBack} onExerciseComplete={() => handleExerciseComplete(20, 'vision-crafting', 1)} />;
         } else if (activeView === 'wheel-of-life') {
-            return <WheelOfLifeTool onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(15, 'wheel-of-life', 1)} />;
+            return <WheelOfLifeTool onGoHome={onGoBack} onExerciseComplete={() => handleExerciseComplete(15, 'wheel-of-life', 1)} />;
         } else if (activeView === 'personal-diary') {
-            return <PersonalDiaryTool onGoHome={onGoBackToHub} onExerciseComplete={(entryId) => handleExerciseComplete(15, 'personal-diary', entryId)} />;
+            return <PersonalDiaryTool onGoHome={onGoBack} onExerciseComplete={(entryId) => handleExerciseComplete(15, 'personal-diary', entryId)} />;
         } else if (activeView === 'gordon-method') {
-            return <GordonMethodTool onGoHome={onGoBackToHub} onExerciseComplete={(scenarioId) => handleExerciseComplete(10, 'gordon-method', scenarioId)} />;
+            return <GordonMethodTool onGoHome={onGoBack} onExerciseComplete={(scenarioId) => handleExerciseComplete(10, 'gordon-method', scenarioId)} />;
         } else if (activeView === 'self-assessment-hub') {
-          return <SelfAssessmentHub onGoHome={onGoBackToHub} onExerciseComplete={() => handleExerciseComplete(0)} />;
+          return <SelfAssessmentHub onGoHome={onGoBack} onExerciseComplete={() => handleExerciseComplete(0)} />;
         }
     }
 
     if (activeView === 'profile') {
       return <ProfilePage onGoHome={handleGoHome} />;
+    }
+    
+    if (activeView === 'rogerian-hub') {
+        return (
+            <main className="container mx-auto px-4 py-12 sm:py-20">
+                <button onClick={() => setActiveView('professional-hub')} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
+                    <ArrowLeftIcon />
+                    Torna agli Strumenti Professionali
+                </button>
+                <header className="text-center mb-16">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+                        Rogers - Approccio Centrato sulla Persona
+                    </h1>
+                    <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+                        Esercitati sui pilastri dell'approccio Rogersiano: ascolto attivo, empatia e feedback non giudicante.
+                    </p>
+                </header>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {ROGERIAN_TOOLS.map((tool) => (
+                        <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
+                    ))}
+                </div>
+            </main>
+        );
+    }
+
+    if (activeView === 'nlp-hub') {
+        return (
+            <main className="container mx-auto px-4 py-12 sm:py-20">
+                <button onClick={() => setActiveView('professional-hub')} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
+                    <ArrowLeftIcon />
+                    Torna agli Strumenti Professionali
+                </button>
+                <header className="text-center mb-16">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+                        Strumenti di PNL
+                    </h1>
+                    <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+                        Tecniche di Programmazione Neuro-Linguistica per l'analisi e la comunicazione efficace.
+                    </p>
+                </header>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {PNL_TOOLS.map((tool) => (
+                        <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
+                    ))}
+                </div>
+            </main>
+        );
     }
 
     if (activeView === 'professional-hub' || activeView === 'personal-hub') {

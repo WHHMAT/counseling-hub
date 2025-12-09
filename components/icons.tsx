@@ -163,6 +163,47 @@ export const UserIcon: React.FC<{ className?: string }> = ({ className = "h-10 w
 
 export const OfficeBuildingIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-4h1m-1 4h1m-1-4h1" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-4h1m-1 4h1" />
+    </svg>
+);
+
+export const MapIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-.553-.894L15 2m-6 5l6-3m0 0l6 3m-6-3v10" />
+    </svg>
+);
+
+export const BrainIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 13.5c0 1.382-1.343 2.5-3 2.5s-3-1.118-3-2.5 1.343-2.5 3-2.5 3 1.118 3 2.5z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 13.5V6.75A2.25 2.25 0 0111.75 4.5h.5a2.25 2.25 0 012.25 2.25v.75" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 13.5h.375c1.03 0 1.875-.846 1.875-1.875V9.375" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.5 13.5c0 1.382 1.343 2.5 3 2.5s3-1.118 3-2.5-1.343-2.5-3-2.5-3 1.118-3 2.5z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.5 13.5V6.75a2.25 2.25 0 00-2.25-2.25h-.5a2.25 2.25 0 00-2.25 2.25v.75" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.5 13.5h-.375c-1.03 0-1.875-.846-1.875-1.875V9.375" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75c0 1.382-1.343 2.5-3 2.5s-3-1.118-3-2.5 1.343-2.5 3-2.5 3 1.118 3 2.5z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75V15.75" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75h.375c1.03 0 1.875-.846 1.875-1.875V13.125" />
+    </svg>
+);
+
+export const UserCircleIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+);
+
+export const ChatBubbleLeftRightIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.72-3.72a2.25 2.25 0 00-3.182 0l-3.72 3.72V12.71c0-.97 1.12-1.814 2.097-1.5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 8.511c-.884.284-1.5 1.128-1.5 2.097v4.286c0 1.136.847 2.1 1.98 2.193l3.72-3.72a2.25 2.25 0 013.182 0l3.72 3.72V12.71c0-.97-1.12-1.814-2.097-1.5z" />
+    </svg>
+);
+
+export const GestaltIcon: React.FC<{ className?: string }> = ({ className = "h-10 w-10" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5c0-2.488-2.012-4.5-4.5-4.5S12 5.012 12 7.5c0 2.488 2.012 4.5 4.5 4.5s4.5-2.012 4.5-4.5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5c0-2.488-2.012-4.5-4.5-4.5S3 14.012 3 16.5c0 2.488 2.012 4.5 4.5 4.5s4.5-2.012 4.5-4.5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12a4.5 4.5 0 00-4.5 4.5m0-4.5a4.5 4.5 0 00-4.5-4.5" />
     </svg>
 );

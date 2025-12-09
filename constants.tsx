@@ -1,23 +1,31 @@
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon, PencilAltIcon, HandshakeIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon, PencilAltIcon, HandshakeIcon, MapIcon, BrainIcon, UserCircleIcon, ChatBubbleLeftRightIcon, GestaltIcon, SparklesIcon, ClockIcon } from './components/icons';
 
-export const PROFESSIONAL_TOOLS: Tool[] = [
-  {
-    id: 'rogerian-reformulation',
-    title: 'Partner di Riformulazione',
-    description: 'Affina la tua abilità di ascolto attivo. Riformula la frase di un cliente evitando le trappole del VISSI e ricevi un feedback immediato dal supervisore AI.',
-    icon: <UsersIcon />,
-    actionText: 'Inizia Esercizio',
-    comingSoon: false,
-  },
+export const PNL_TOOLS: Tool[] = [
   {
     id: 'rapport-pacing',
     title: 'Pratica del Rapport',
     description: 'Allenati a costruire il rapport con il cliente attraverso la tecnica del ricalco. Esplora diverse modalità di mirroring per creare una connessione empatica.',
     icon: <LinkIcon />,
     actionText: 'Inizia Esercizio',
-    comingSoon: false,
+  },
+  {
+    id: 'nlp-client-map',
+    title: 'PNL - La Mappa del Cliente',
+    description: 'Analizza il discorso di un cliente per identificare Cancellazioni, Generalizzazioni e Deformazioni (Metamodello PNL) e ricevi un feedback dall\'AI.',
+    icon: <MapIcon />,
+    actionText: 'Inizia Analisi',
+  },
+];
+
+export const ROGERIAN_TOOLS: Tool[] = [
+  {
+    id: 'rogerian-reformulation',
+    title: 'Partner di Riformulazione',
+    description: 'Affina la tua abilità di ascolto attivo. Riformula la frase di un cliente evitando le trappole del VISSI e ricevi un feedback immediato dal supervisore AI.',
+    icon: <UsersIcon />,
+    actionText: 'Inizia Esercizio',
   },
   {
     id: 'vissi-explorer',
@@ -25,7 +33,6 @@ export const PROFESSIONAL_TOOLS: Tool[] = [
     description: 'Impara a riconoscere le risposte trappola (Valutare, Interpretare, Soluzionare, Sostenere, Investigare) con esempi pratici e quiz interattivi.',
     icon: <QuestionMarkCircleIcon />,
     actionText: 'Inizia Esercizio',
-    comingSoon: false,
   },
   {
     id: 'phenomenological-feedback',
@@ -33,7 +40,71 @@ export const PROFESSIONAL_TOOLS: Tool[] = [
     description: "Allenati a fornire un feedback basato sul 'qui e ora', senza interpretazioni o giudizi, per aumentare la consapevolezza del cliente.",
     icon: <BookOpenIcon />,
     actionText: 'Inizia Pratica',
-    comingSoon: false,
+  },
+];
+
+export const PROFESSIONAL_TOOLS: Tool[] = [
+  {
+    id: 'rogerian-hub',
+    title: 'Rogers - Approccio centrato sulla persona',
+    description: "Esercitati sui pilastri dell'approccio Rogersiano: ascolto attivo, empatia e feedback non giudicante.",
+    icon: <UserCircleIcon />,
+    actionText: 'Apri Sezione',
+  },
+  {
+    id: 'nlp-hub',
+    title: 'Strumenti di PNL',
+    description: 'Esplora le tecniche della Programmazione Neuro-Linguistica per comprendere la mappa del mondo del cliente e costruire un rapport efficace.',
+    icon: <BrainIcon />,
+    actionText: 'Apri Sezione',
+  },
+  {
+    id: 'transactional-analysis',
+    title: 'Strumenti di Analisi Transazionale',
+    description: 'Esplora i concetti di Genitore, Adulto e Bambino, i giochi psicologici e gli script di vita per una maggiore consapevolezza relazionale.',
+    icon: <ChatBubbleLeftRightIcon />,
+    actionText: 'Esplora Strumenti',
+    comingSoon: true,
+  },
+  {
+    id: 'gestalt-tools',
+    title: 'Strumenti di Gestalt',
+    description: "Pratica le tecniche della Gestalt come la sedia vuota e il dialogo con le parti per integrare le polarità e vivere nel 'qui e ora'.",
+    icon: <GestaltIcon />,
+    actionText: 'Inizia Pratica',
+    comingSoon: true,
+  },
+  {
+    id: 'systemic-relational',
+    title: 'Strumenti di approccio sistemico relazionale',
+    description: 'Esplora le dinamiche relazionali e familiari. Allenati su strumenti come il genogramma e le domande circolari per comprendere i sistemi in cui vive il cliente.',
+    icon: <UsersIcon />,
+    actionText: 'Esplora Strumenti',
+    comingSoon: true,
+  },
+  {
+    id: 'brief-counseling',
+    title: 'Strumenti di counseling breve',
+    description: 'Apprendi tecniche focalizzate sulla soluzione (Solution-Focused Brief Therapy) per aiutare i clienti a raggiungere obiettivi specifici in un numero limitato di sessioni.',
+    icon: <ClockIcon className="h-10 w-10" />,
+    actionText: 'Inizia Esercizi',
+    comingSoon: true,
+  },
+  {
+    id: 'attachment-theory',
+    title: "Strumenti legati alla teoria dell'Attaccamento",
+    description: 'Approfondisci gli stili di attaccamento (sicuro, insicuro-evitante, insicuro-ambivalente) e impara a riconoscere il loro impatto sulle relazioni adulte del cliente.',
+    icon: <LinkIcon />,
+    actionText: 'Inizia Studio',
+    comingSoon: true,
+  },
+  {
+    id: 'mindfulness-tools',
+    title: 'Strumenti di Mindfulness',
+    description: 'Sviluppa strumenti basati sulla consapevolezza per te e per i tuoi clienti, per gestire lo stress e aumentare la presenza mentale.',
+    icon: <SparklesIcon />,
+    actionText: 'Inizia Esercizi',
+    comingSoon: true,
   },
   {
     id: 'case-studies',
