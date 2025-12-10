@@ -350,7 +350,7 @@ Assegna un punteggio numerico: 10 per una riformulazione eccellente che segue la
     );
 
     return (
-        <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div className="bg-gray-50 min-h-screen pt-20 pb-12 sm:py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
                 <button onClick={onGoHome} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
                     <ArrowLeftIcon />
@@ -359,9 +359,6 @@ Assegna un punteggio numerico: 10 per una riformulazione eccellente che segue la
 
                 {!reformulationType ? renderSelectionScreen() : renderExerciseScreen()}
                 
-                 <footer className="text-center py-8 mt-12">
-                    <p className="text-gray-500">&copy; {new Date().getFullYear()} Hub Competenze Counseling. Tutti i diritti riservati.</p>
-                </footer>
             </div>
         </div>
     );

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon, PencilAltIcon, HandshakeIcon, MapIcon, BrainIcon, UserCircleIcon, ChatBubbleLeftRightIcon, GestaltIcon, SparklesIcon, ClockIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon, PencilAltIcon, HandshakeIcon, MapIcon, BrainIcon, UserCircleIcon, ChatBubbleLeftRightIcon, GestaltIcon, SparklesIcon, ClockIcon, BriefcaseIcon } from './components/icons';
 
 export const PNL_TOOLS: Tool[] = [
   {
@@ -59,6 +59,14 @@ export const PROFESSIONAL_TOOLS: Tool[] = [
     actionText: 'Apri Sezione',
   },
   {
+    id: 'pluralistic-hub',
+    title: 'Metodo Pluralistico Integrato',
+    description: 'Impara ad integrare diversi approcci di counseling per creare un intervento su misura per ogni cliente. Esplora come combinare tecniche rogersiane, PNL, sistemiche e altre in modo coerente ed efficace.',
+    icon: <BriefcaseIcon />,
+    actionText: 'Apri Sezione',
+    comingSoon: false,
+  },
+  {
     id: 'transactional-analysis',
     title: 'Strumenti di Analisi Transazionale',
     description: 'Esplora i concetti di Genitore, Adulto e Bambino, i giochi psicologici e gli script di vita per una maggiore consapevolezza relazionale.',
@@ -113,6 +121,17 @@ export const PROFESSIONAL_TOOLS: Tool[] = [
     icon: <ClipboardListIcon />,
     actionText: 'Analizza un Caso',
     comingSoon: true,
+  },
+];
+
+export const PLURALISTIC_TOOLS: Tool[] = [
+  {
+    id: 'counseling-process',
+    title: 'Processo di Counseling',
+    description: "Esplora e pratica le fasi chiave del processo di counseling, dalla creazione dell'alleanza terapeutica alla conclusione del percorso.",
+    icon: <ClipboardListIcon />,
+    actionText: 'Inizia Esercizio',
+    comingSoon: false,
   },
 ];
 

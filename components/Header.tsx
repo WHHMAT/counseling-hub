@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ onGoHome, onShowAuth, onShowProfile }) 
                 <div className="flex items-center justify-between h-16">
                     <div className="flex items-center">
                         <button onClick={onGoHome} className="flex-shrink-0 text-sky-600 font-bold text-xl hover:text-sky-800 transition-colors">
-                            Hub Competenze Counseling
+                            Counseling Hub
                         </button>
                     </div>
                     <div className="flex items-center space-x-2 sm:space-x-4">

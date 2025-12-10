@@ -1,10 +1,9 @@
+
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
 import { StarIcon, ClockIcon, TrophyIcon, CameraIcon } from './icons';
 import { storage, db } from '../firebase';
-// FIX: The 'TOOLS' export was not found in '../constants'.
-// To resolve this, PROFESSIONAL_TOOLS and PERSONAL_TOOLS are imported and combined.
 import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS } from '../constants';
 import { EXERCISE_COUNTS } from '../data/exerciseCounts';
 
@@ -41,209 +40,125 @@ const TOOLS = [...PROFESSIONAL_TOOLS, ...PERSONAL_TOOLS];
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
     const { user } = useAuth();
-    const { userData, loading } = useUserData();
+    const { userData, loading: userDataLoading } = useUserData();
+    const [uploading, setUploading] = useState(false);
+    const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadError, setUploadError] = useState('');
-    const [isHovering, setIsHovering] = useState(false);
-
-    const reformulationSubtypeTitles: Record<string, string> = {
-        'general': 'Riformulazione Generale',
-        'simple': 'Riflessione Semplice',
-        'echo': 'Riformulazione Eco',
-        'paraphrase': 'Parafrasi',
-        'elucidation': 'Delucidazione',
-        'summary': 'Riepilogo'
-    };
-
-    const getToolTitle = (id: string): string => {
-        if (id.startsWith('rogerian-reformulation-')) {
-            const subtype = id.replace('rogerian-reformulation-', '');
-            return `Riformulazione: ${reformulationSubtypeTitles[subtype] || subtype}`;
-        }
-        const tool = TOOLS.find(t => t.id === id);
-        return tool ? tool.title : id;
-    };
-
-
-    const getUserInitials = (name: string | null | undefined): string => {
-        if (!name) {
-            const email = user?.email;
-            return email ? email[0].toUpperCase() : 'U';
-        }
-        const parts = name.split(' ').filter(p => p);
-        if (parts.length > 1) {
-            return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-        }
-        return name.substring(0, 2).toUpperCase();
-    };
 
     const handleAvatarClick = () => {
         fileInputRef.current?.click();
     };
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file || !user) {
-            return;
-        }
-
-        if (!file.type.startsWith('image/')) {
-            setUploadError('Per favore, seleziona un file immagine.');
-            return;
-        }
+        if (!file || !user) return;
         
-        setIsUploading(true);
-        setUploadError('');
+        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+            setError("L'immagine è troppo grande. Il limite è 2MB.");
+            return;
+        }
 
-        const filePath = `profile_pictures/${user.uid}/${file.name}`;
-        const storageRef = storage.ref(filePath);
-        const uploadTask = storageRef.put(file);
+        setUploading(true);
+        setError('');
 
-        uploadTask.on(
-            'state_changed',
-            null,
-            (error) => {
-                console.error("Upload error:", error);
-                setUploadError('Errore durante il caricamento. Riprova.');
-                setIsUploading(false);
-            },
-            async () => {
-                try {
-                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                    await user.updateProfile({ photoURL: downloadURL });
-                    await db.collection('users').doc(user.uid).update({ photoURL: downloadURL });
-                } catch (error) {
-                    console.error("Error updating profile:", error);
-                    setUploadError('Errore durante l\'aggiornamento del profilo.');
-                } finally {
-                    setIsUploading(false);
-                }
-            }
-        );
+        try {
+            const storageRef = storage.ref(`avatars/${user.uid}/${file.name}`);
+            const uploadTask = await storageRef.put(file);
+            const photoURL = await uploadTask.ref.getDownloadURL();
+            
+            await user.updateProfile({ photoURL });
+            await db.collection('users').doc(user.uid).update({ photoURL });
+
+        } catch (err) {
+            console.error("Error uploading image:", err);
+            setError("Errore durante il caricamento dell'immagine. Riprova.");
+        } finally {
+            setUploading(false);
+        }
     };
     
-    const renderContent = () => {
-        if (loading) {
-            return <LoadingSpinner size="h-12 w-12 py-10" />;
-        }
-
-        if (!user || !userData) {
-            return (
-                <div className="text-center py-10">
-                    <p className="text-gray-600">Impossibile caricare i dati del profilo.</p>
-                </div>
-            );
-        }
-
-        return (
-             <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-                <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
-                    <div 
-                        className="relative h-24 w-24 flex-shrink-0 cursor-pointer"
-                        onClick={handleAvatarClick}
-                        onMouseEnter={() => setIsHovering(true)}
-                        onMouseLeave={() => setIsHovering(false)}
-                    >
-                        <div className="h-full w-full bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-4xl">
-                            {user.photoURL ? (
-                                <img src={user.photoURL} alt="Foto profilo" className="h-full w-full rounded-full object-cover" />
-                            ) : (
-                                <span>{getUserInitials(user.displayName)}</span>
-                            )}
-                        </div>
-                        <div className={`absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center transition-opacity ${isHovering || isUploading ? 'opacity-100' : 'opacity-0'}`}>
-                            {isUploading ? <LoadingSpinner size="h-8 w-8" /> : <CameraIcon className="h-8 w-8 text-white" />}
-                        </div>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            accept="image/png, image/jpeg"
-                            hidden
-                        />
-                    </div>
-                    <div className="text-center sm:text-left">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{user.displayName || `${userData.firstName} ${userData.lastName}`}</h1>
-                        <p className="text-gray-600 text-lg">{user.email}</p>
-                        {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
-                    </div>
-                </div>
-                
-                <h2 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">Le tue Statistiche</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <StatCard 
-                        icon={<StarIcon className="h-6 w-6 text-yellow-600" />}
-                        label="Punti Esperienza"
-                        value={userData.points}
-                        color="bg-yellow-100"
-                    />
-                    <StatCard 
-                        icon={<ClockIcon className="h-6 w-6 text-indigo-600" />}
-                        label="Tempo di Pratica"
-                        value={`${userData.practiceTime} min`}
-                        color="bg-indigo-100"
-                    />
-                    <StatCard 
-                        icon={<TrophyIcon className="h-6 w-6 text-green-600" />}
-                        label="Rank Attuale"
-                        value={userData.rank}
-                        color="bg-green-100"
-                    />
-                </div>
-
-                {userData.personalVision && (
-                    <div className="mt-10">
-                        <h2 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">La Tua Vision Personale</h2>
-                        <div className="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-lg">
-                            <p className="text-lg italic text-amber-900">"{userData.personalVision}"</p>
-                        </div>
-                    </div>
-                )}
-
-                <div className="mt-10">
-                    <h2 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">Progresso per Strumento</h2>
-                    <div className="space-y-5">
-                       {Object.keys(EXERCISE_COUNTS).sort().map(toolId => {
-                            const completedCount = userData.completedExercises?.[toolId]?.length || 0;
-                            const totalCount = EXERCISE_COUNTS[toolId];
-                            const percentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
-                            const title = getToolTitle(toolId);
-
-                            return (
-                                <div key={toolId}>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <h3 className="text-md font-medium text-gray-700">{title}</h3>
-                                        <span className="text-sm font-semibold text-gray-600">{completedCount} / {totalCount}</span>
-                                    </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div 
-                                            className="bg-sky-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
-                                            style={{ width: `${percentage}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-        );
+    const getTotalCompletedExercises = () => {
+        if (!userData?.completedExercises) return 0;
+        const exercisesValues = Object.values(userData.completedExercises) as (string | number)[][];
+        return exercisesValues.reduce((total: number, exercises) => total + new Set(exercises).size, 0);
     };
 
+    const getTotalPossibleExercises = () => {
+        return Object.values(EXERCISE_COUNTS).reduce((total, count) => total + count, 0);
+    };
+
+    if (userDataLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <LoadingSpinner />
+            </div>
+        );
+    }
+
+    if (!user || !userData) {
+        return (
+            <div className="text-center py-20">
+                <p>Per favore, accedi per vedere il tuo profilo.</p>
+            </div>
+        )
+    }
+
+    const totalCompleted = getTotalCompletedExercises();
+    const totalPossible = getTotalPossibleExercises();
+    const overallProgress = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+    
     return (
         <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-4xl mx-auto">
                 <button onClick={onGoHome} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
                     <ArrowLeftIcon />
                     Torna al menu principale
                 </button>
+                
+                <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+                    <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                        <div className="relative">
+                            <button onClick={handleAvatarClick} className="h-24 w-24 bg-sky-100 rounded-full flex items-center justify-center text-sky-600 font-bold text-3xl hover:bg-sky-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500" title="Cambia foto profilo">
+                                {uploading ? (
+                                    <LoadingSpinner size="h-8 w-8" />
+                                ) : user.photoURL ? (
+                                    <img src={user.photoURL} alt="Foto profilo" className="h-full w-full rounded-full object-cover" />
+                                ) : (
+                                    <span>{userData.firstName?.[0]}{userData.lastName?.[0]}</span>
+                                )}
+                                <div className="absolute bottom-0 right-0 bg-white p-1 rounded-full shadow-md">
+                                    <CameraIcon className="h-5 w-5 text-gray-600" />
+                                </div>
+                            </button>
+                            <input type="file" accept="image/png, image/jpeg" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                        </div>
+                         <div>
+                            <h1 className="text-3xl font-bold text-gray-900 text-center sm:text-left">{userData.firstName} {userData.lastName}</h1>
+                            <p className="text-gray-500 text-center sm:text-left">{userData.email}</p>
+                        </div>
+                    </div>
+                     {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+                    
+                    <div className="mt-8 border-t pt-6">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-4">Le tue Statistiche</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <StatCard icon={<StarIcon />} label="Punti Esperienza" value={userData.points} color="bg-yellow-100 text-yellow-600" />
+                            <StatCard icon={<TrophyIcon />} label="Rank" value={userData.rank} color="bg-amber-100 text-amber-600" />
+                            <StatCard icon={<ClockIcon />} label="Esercizi Completati" value={userData.exerciseCount} color="bg-sky-100 text-sky-600" />
+                        </div>
+                    </div>
 
-                {renderContent()}
+                    <div className="mt-8 border-t pt-6">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-4">Progresso Generale</h2>
+                         <div className="w-full bg-gray-200 rounded-full h-4">
+                            <div className="bg-green-500 h-4 rounded-full text-center text-white text-xs font-bold" style={{ width: `${overallProgress}%` }}>
+                                {overallProgress > 10 && `${overallProgress}%`}
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-600 text-right mt-1">{totalCompleted} / {totalPossible} esercizi unici completati</p>
+                    </div>
 
-                 <footer className="text-center py-8 mt-12">
-                    <p className="text-gray-500">&copy; {new Date().getFullYear()} Hub Competenze Counseling. Tutti i diritti riservati.</p>
-                </footer>
+                </div>
             </div>
         </div>
     );

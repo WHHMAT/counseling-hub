@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS, PNL_TOOLS, ROGERIAN_TOOLS } from './constants';
+import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS, PNL_TOOLS, ROGERIAN_TOOLS, PLURALISTIC_TOOLS } from './constants';
 import ToolCard from './components/ToolCard';
 import RolePlayingTool from './components/RolePlayingTool';
 import RapportTool from './components/RapportTool';
@@ -14,6 +15,7 @@ import WheelOfLifeTool from './components/WheelOfLifeTool';
 import PersonalDiaryTool from './components/PersonalDiaryTool';
 import GordonMethodTool from './components/GordonMethodTool';
 import NlpMapTool from './components/NlpMapTool';
+import CounselingProcessTool from './components/CounselingProcessTool';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
 import Header from './components/Header';
@@ -34,7 +36,9 @@ const ArrowLeftIcon: React.FC = () => (
 interface HubCardProps {
   title: string;
   description: string;
-  icon: React.ReactNode;
+  // FIX: Specified that the 'icon' prop is a React element that accepts a 'className' prop,
+  // which resolves the TypeScript error with React.cloneElement.
+  icon: React.ReactElement<{ className?: string }>;
   onClick: () => void;
   colorClass: string;
 }
@@ -45,7 +49,7 @@ const HubCard: React.FC<HubCardProps> = ({ title, description, icon, onClick, co
         className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center transform hover:-translate-y-2 transition-transform duration-300 ease-in-out cursor-pointer"
     >
         <div className={`rounded-full p-5 mb-6 ${colorClass}`}>
-            {React.cloneElement(icon as React.ReactElement, { className: "h-12 w-12 text-white" })}
+            {React.cloneElement(icon, { className: "h-12 w-12 text-white" })}
         </div>
         <h3 className="text-2xl font-bold text-gray-800 mb-3">{title}</h3>
         <p className="text-gray-600 flex-grow">{description}</p>
@@ -122,10 +126,11 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    const isProfessionalTool = PROFESSIONAL_TOOLS.some(tool => tool.id === activeView && tool.id !== 'nlp-hub' && tool.id !== 'rogerian-hub');
+    const isProfessionalTool = PROFESSIONAL_TOOLS.some(tool => tool.id === activeView && tool.id !== 'nlp-hub' && tool.id !== 'rogerian-hub' && tool.id !== 'pluralistic-hub');
     const isPersonalTool = PERSONAL_TOOLS.some(tool => tool.id === activeView);
     const isNlpTool = PNL_TOOLS.some(tool => tool.id === activeView);
     const isRogerianTool = ROGERIAN_TOOLS.some(tool => tool.id === activeView);
+    const isPluralisticTool = PLURALISTIC_TOOLS.some(tool => tool.id === activeView);
 
     if (isNlpTool) {
         const onGoBack = () => setActiveView('nlp-hub');
@@ -145,6 +150,13 @@ const App: React.FC = () => {
           return <VissiTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
         } else if (activeView === 'phenomenological-feedback') {
           return <PhenomenologicalFeedbackTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        }
+    }
+
+    if(isPluralisticTool) {
+        const onGoBack = () => setActiveView('pluralistic-hub');
+        if (activeView === 'counseling-process') {
+            return <CounselingProcessTool onGoHome={onGoBack} onExerciseComplete={() => handleExerciseComplete(50, 'counseling-process', 1)} />;
         }
     }
     
@@ -176,7 +188,7 @@ const App: React.FC = () => {
     
     if (activeView === 'rogerian-hub') {
         return (
-            <main className="container mx-auto px-4 py-12 sm:py-20">
+            <main className="container mx-auto px-4 pt-20 pb-12 sm:py-20">
                 <button onClick={() => setActiveView('professional-hub')} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
                     <ArrowLeftIcon />
                     Torna agli Strumenti Professionali
@@ -200,7 +212,7 @@ const App: React.FC = () => {
 
     if (activeView === 'nlp-hub') {
         return (
-            <main className="container mx-auto px-4 py-12 sm:py-20">
+            <main className="container mx-auto px-4 pt-20 pb-12 sm:py-20">
                 <button onClick={() => setActiveView('professional-hub')} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
                     <ArrowLeftIcon />
                     Torna agli Strumenti Professionali
@@ -222,6 +234,30 @@ const App: React.FC = () => {
         );
     }
 
+    if (activeView === 'pluralistic-hub') {
+        return (
+            <main className="container mx-auto px-4 pt-20 pb-12 sm:py-20">
+                <button onClick={() => setActiveView('professional-hub')} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
+                    <ArrowLeftIcon />
+                    Torna agli Strumenti Professionali
+                </button>
+                <header className="text-center mb-16">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+                        Metodo Pluralistico Integrato
+                    </h1>
+                    <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+                        Impara ad integrare diversi approcci di counseling per creare un intervento su misura per ogni cliente.
+                    </p>
+                </header>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {PLURALISTIC_TOOLS.map((tool) => (
+                        <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
+                    ))}
+                </div>
+            </main>
+        );
+    }
+
     if (activeView === 'professional-hub' || activeView === 'personal-hub') {
         const isProfessional = activeView === 'professional-hub';
         const hubTitle = isProfessional ? "Strumenti di Crescita Professionale" : "Strumenti di Crescita Personale";
@@ -231,7 +267,7 @@ const App: React.FC = () => {
         const toolsToShow = isProfessional ? PROFESSIONAL_TOOLS : PERSONAL_TOOLS;
 
         return (
-            <main className="container mx-auto px-4 py-12 sm:py-20">
+            <main className="container mx-auto px-4 pt-20 pb-12 sm:py-20">
                 <button onClick={() => setActiveView(null)} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
                     <ArrowLeftIcon />
                     Torna alla scelta
@@ -255,11 +291,10 @@ const App: React.FC = () => {
 
     // Main Home Screen
     return (
-        <main className="container mx-auto px-4 py-12 sm:py-20">
+        <main className="container mx-auto px-4 pt-20 pb-12 sm:py-20">
             <header className="text-center mb-16">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight">
-                <span className="block">Hub Competenze</span>
-                <span className="block text-sky-600">per Counselor</span>
+                Counseling <span className="text-sky-600">Hub</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
                 Scegli il tuo percorso di crescita. Sviluppa le tue abilità professionali o esplora il tuo mondo interiore.
@@ -303,7 +338,7 @@ const App: React.FC = () => {
       {renderContent()}
 
       <footer className="text-center py-8">
-        <p className="text-gray-500">&copy; {new Date().getFullYear()} Hub Competenze Counseling. Tutti i diritti riservati.</p>
+        <p className="text-gray-500">&copy; {new Date().getFullYear()} Counseling Hub. Tutti i diritti riservati.</p>
       </footer>
     </div>
   );

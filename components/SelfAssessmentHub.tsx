@@ -107,7 +107,7 @@ const SelfAssessmentHub: React.FC<SelfAssessmentHubProps> = ({ onGoHome, onExerc
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div className="bg-gray-50 min-h-screen pt-20 pb-12 sm:py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 <button onClick={onGoHome} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
                     <ArrowLeftIcon />
@@ -129,9 +129,6 @@ const SelfAssessmentHub: React.FC<SelfAssessmentHubProps> = ({ onGoHome, onExerc
                   ))}
                 </div>
 
-                <footer className="text-center py-8 mt-12">
-                    <p className="text-gray-500">&copy; {new Date().getFullYear()} Hub Competenze Counseling. Tutti i diritti riservati.</p>
-                </footer>
             </div>
         </div>
     );

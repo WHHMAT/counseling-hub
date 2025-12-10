@@ -278,9 +278,6 @@ Assegna un punteggio di 10 per aver completato l'esercizio.`;
                 {step === 'categorize' && renderCategorizeStep()}
                 {step === 'result' && renderResultStep()}
 
-                <footer className="text-center py-8 mt-12">
-                    <p className="text-gray-500">&copy; {new Date().getFullYear()} Hub Competenze Counseling. Tutti i diritti riservati.</p>
-                </footer>
             </div>
         </div>
     );

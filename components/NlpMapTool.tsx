@@ -237,9 +237,6 @@ Assegna un punteggio numerico: 10 per un'analisi accurata e approfondita; 5 se l
             )}
           </div>
 
-          <footer className="text-center py-8 mt-12">
-            <p className="text-gray-500">&copy; {new Date().getFullYear()} Hub Competenze Counseling. Tutti i diritti riservati.</p>
-          </footer>
         </div>
       </div>
     );
