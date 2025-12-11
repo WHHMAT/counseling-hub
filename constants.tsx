@@ -1,6 +1,7 @@
+
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon, PencilAltIcon, HandshakeIcon, MapIcon, BrainIcon, UserCircleIcon, ChatBubbleLeftRightIcon, GestaltIcon, SparklesIcon, ClockIcon, BriefcaseIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon, PencilAltIcon, HandshakeIcon, MapIcon, BrainIcon, UserCircleIcon, ChatBubbleLeftRightIcon, GestaltIcon, SparklesIcon, ClockIcon, BriefcaseIcon, UserIcon } from './components/icons';
 
 export const PNL_TOOLS: Tool[] = [
   {
@@ -43,6 +44,16 @@ export const ROGERIAN_TOOLS: Tool[] = [
   },
 ];
 
+export const TRANSACTIONAL_TOOLS: Tool[] = [
+    {
+        id: 'ego-states',
+        title: "Riconoscere gli Stati dell'Io",
+        description: "Impara a distinguere tra Genitore (Normativo/Affettivo), Adulto e Bambino (Libero/Adattato). Analizza frasi e comportamenti per identificare lo stato attivo.",
+        icon: <UserIcon />,
+        actionText: 'Inizia Analisi',
+    }
+];
+
 export const PROFESSIONAL_TOOLS: Tool[] = [
   {
     id: 'rogerian-hub',
@@ -50,6 +61,14 @@ export const PROFESSIONAL_TOOLS: Tool[] = [
     description: "Esercitati sui pilastri dell'approccio Rogersiano: ascolto attivo, empatia e feedback non giudicante.",
     icon: <UserCircleIcon />,
     actionText: 'Apri Sezione',
+  },
+  {
+    id: 'transactional-hub',
+    title: 'Strumenti di Analisi Transazionale',
+    description: 'Esplora i concetti di Genitore, Adulto e Bambino, i giochi psicologici e gli script di vita per una maggiore consapevolezza relazionale.',
+    icon: <ChatBubbleLeftRightIcon />,
+    actionText: 'Apri Sezione',
+    comingSoon: false,
   },
   {
     id: 'nlp-hub',
@@ -65,14 +84,6 @@ export const PROFESSIONAL_TOOLS: Tool[] = [
     icon: <BriefcaseIcon />,
     actionText: 'Apri Sezione',
     comingSoon: false,
-  },
-  {
-    id: 'transactional-analysis',
-    title: 'Strumenti di Analisi Transazionale',
-    description: 'Esplora i concetti di Genitore, Adulto e Bambino, i giochi psicologici e gli script di vita per una maggiore consapevolezza relazionale.',
-    icon: <ChatBubbleLeftRightIcon />,
-    actionText: 'Esplora Strumenti',
-    comingSoon: true,
   },
   {
     id: 'gestalt-tools',

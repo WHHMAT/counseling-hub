@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS, PNL_TOOLS, ROGERIAN_TOOLS, PLURALISTIC_TOOLS } from './constants';
+import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS, PNL_TOOLS, ROGERIAN_TOOLS, PLURALISTIC_TOOLS, TRANSACTIONAL_TOOLS } from './constants';
 import ToolCard from './components/ToolCard';
 import RolePlayingTool from './components/RolePlayingTool';
 import RapportTool from './components/RapportTool';
@@ -16,6 +16,7 @@ import PersonalDiaryTool from './components/PersonalDiaryTool';
 import GordonMethodTool from './components/GordonMethodTool';
 import NlpMapTool from './components/NlpMapTool';
 import CounselingProcessTool from './components/CounselingProcessTool';
+import EgoStatesTool from './components/EgoStatesTool';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
 import Header from './components/Header';
@@ -23,9 +24,11 @@ import AuthPage from './components/AuthPage';
 import ProfilePage from './components/ProfilePage';
 import { useAuth } from './hooks/useAuth';
 import { useUserData } from './hooks/useUserData';
+import { usePracticeTimer } from './hooks/usePracticeTimer';
 import { db } from './firebase';
 import firebase from './firebase';
 import { BriefcaseIcon, SparklesIcon } from './components/icons';
+import { getRankForPoints } from './data/rankSystem';
 
 const ArrowLeftIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,6 +67,9 @@ const App: React.FC = () => {
   const [showDonationPopup, setShowDonationPopup] = useState(false);
   const { user } = useAuth();
   const { userData } = useUserData();
+  
+  // Attiva il timer automatico per tracciare il tempo di pratica
+  usePracticeTimer(activeView);
 
   const handleExerciseComplete = async (points: number, toolId?: string, exerciseId?: string | number) => {
     if (!user) {
@@ -87,10 +93,16 @@ const App: React.FC = () => {
             const data = doc.data();
             const currentCount = data?.exerciseCount || 0;
             const newCount = currentCount + 1;
+            const currentPoints = data?.points || 0;
+            const newPoints = currentPoints + points;
+            
+            // Calcola il nuovo rank basato sui punti totali aggiornati
+            const newRank = getRankForPoints(newPoints).name;
 
             const updates: any = {
                 exerciseCount: firebase.firestore.FieldValue.increment(1),
-                points: firebase.firestore.FieldValue.increment(points)
+                points: firebase.firestore.FieldValue.increment(points),
+                rank: newRank
             };
 
             if (toolId && (exerciseId || exerciseId === 0)) {
@@ -126,11 +138,12 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    const isProfessionalTool = PROFESSIONAL_TOOLS.some(tool => tool.id === activeView && tool.id !== 'nlp-hub' && tool.id !== 'rogerian-hub' && tool.id !== 'pluralistic-hub');
+    const isProfessionalTool = PROFESSIONAL_TOOLS.some(tool => tool.id === activeView && tool.id !== 'nlp-hub' && tool.id !== 'rogerian-hub' && tool.id !== 'pluralistic-hub' && tool.id !== 'transactional-hub');
     const isPersonalTool = PERSONAL_TOOLS.some(tool => tool.id === activeView);
     const isNlpTool = PNL_TOOLS.some(tool => tool.id === activeView);
     const isRogerianTool = ROGERIAN_TOOLS.some(tool => tool.id === activeView);
     const isPluralisticTool = PLURALISTIC_TOOLS.some(tool => tool.id === activeView);
+    const isTransactionalTool = TRANSACTIONAL_TOOLS.some(tool => tool.id === activeView);
 
     if (isNlpTool) {
         const onGoBack = () => setActiveView('nlp-hub');
@@ -150,6 +163,13 @@ const App: React.FC = () => {
           return <VissiTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
         } else if (activeView === 'phenomenological-feedback') {
           return <PhenomenologicalFeedbackTool onGoHome={onGoBack} onExerciseComplete={handleExerciseComplete} userData={userData} />;
+        }
+    }
+
+    if (isTransactionalTool) {
+        const onGoBack = () => setActiveView('transactional-hub');
+        if (activeView === 'ego-states') {
+            return <EgoStatesTool onGoHome={onGoBack} onExerciseComplete={(points, toolId, exId) => handleExerciseComplete(points, toolId, exId)} userData={userData} />;
         }
     }
 
@@ -227,6 +247,30 @@ const App: React.FC = () => {
                 </header>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {PNL_TOOLS.map((tool) => (
+                        <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
+                    ))}
+                </div>
+            </main>
+        );
+    }
+
+    if (activeView === 'transactional-hub') {
+        return (
+            <main className="container mx-auto px-4 pt-20 pb-12 sm:py-20">
+                <button onClick={() => setActiveView('professional-hub')} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
+                    <ArrowLeftIcon />
+                    Torna agli Strumenti Professionali
+                </button>
+                <header className="text-center mb-16">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+                        Analisi Transazionale
+                    </h1>
+                    <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+                        Comprendi gli Stati dell'Io, analizza le transazioni e scopri i copioni di vita.
+                    </p>
+                </header>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {TRANSACTIONAL_TOOLS.map((tool) => (
                         <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
                     ))}
                 </div>

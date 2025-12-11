@@ -1,3 +1,4 @@
+
 export const EXERCISE_COUNTS: Record<string, number> = {
   'rogerian-reformulation-general': 10,
   'rogerian-reformulation-simple': 10,
@@ -16,4 +17,5 @@ export const EXERCISE_COUNTS: Record<string, number> = {
   'wheel-of-life': 1,
   'personal-diary': 50,
   'nlp-client-map': 3,
+  'ego-states': 5,
 };

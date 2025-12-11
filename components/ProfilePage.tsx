@@ -2,10 +2,12 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useUserData } from '../hooks/useUserData';
-import { StarIcon, ClockIcon, TrophyIcon, CameraIcon } from './icons';
+import { StarIcon, ClockIcon, TrophyIcon, CameraIcon, ClipboardListIcon, MedalIcon, LockClosedIcon } from './icons';
 import { storage, db } from '../firebase';
 import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS } from '../constants';
 import { EXERCISE_COUNTS } from '../data/exerciseCounts';
+import { getNextRank, RANKS } from '../data/rankSystem';
+import { BADGES } from '../data/badges';
 
 
 const ArrowLeftIcon: React.FC = () => (
@@ -86,6 +88,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
     const getTotalPossibleExercises = () => {
         return Object.values(EXERCISE_COUNTS).reduce((total, count) => total + count, 0);
     };
+    
+    const formatPracticeTime = (minutes: number = 0) => {
+        if (minutes < 60) {
+            return `${minutes} min`;
+        }
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours}h ${mins}m`;
+    };
 
     if (userDataLoading) {
         return (
@@ -107,6 +118,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
     const totalPossible = getTotalPossibleExercises();
     const overallProgress = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
     
+    const currentPoints = userData.points || 0;
+    const nextRank = getNextRank(currentPoints);
+    const currentRank = RANKS.slice().reverse().find(r => currentPoints >= r.minPoints) || RANKS[0];
+    
+    // Calculate progress to next rank
+    let rankProgress = 100;
+    let pointsToNext = 0;
+    
+    if (nextRank) {
+        const prevRankPoints = currentRank.minPoints;
+        const pointsInLevel = currentPoints - prevRankPoints;
+        const totalPointsForLevel = nextRank.minPoints - prevRankPoints;
+        rankProgress = Math.min(100, Math.max(0, (pointsInLevel / totalPointsForLevel) * 100));
+        pointsToNext = nextRank.minPoints - currentPoints;
+    }
+
     return (
         <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
@@ -132,30 +159,78 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onGoHome }) => {
                             </button>
                             <input type="file" accept="image/png, image/jpeg" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                         </div>
-                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 text-center sm:text-left">{userData.firstName} {userData.lastName}</h1>
-                            <p className="text-gray-500 text-center sm:text-left">{userData.email}</p>
+                         <div className="text-center sm:text-left">
+                            <h1 className="text-3xl font-bold text-gray-900">{userData.firstName} {userData.lastName}</h1>
+                            <p className="text-gray-500">{userData.email}</p>
+                            {userData.schoolAffiliation && (
+                                <p className="text-sky-600 font-medium text-sm mt-1">{userData.schoolAffiliation}</p>
+                            )}
                         </div>
                     </div>
                      {error && <p className="text-red-500 text-center mt-4">{error}</p>}
                     
                     <div className="mt-8 border-t pt-6">
                         <h2 className="text-xl font-semibold text-gray-800 mb-4">Le tue Statistiche</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <StatCard icon={<StarIcon />} label="Punti Esperienza" value={userData.points} color="bg-yellow-100 text-yellow-600" />
-                            <StatCard icon={<TrophyIcon />} label="Rank" value={userData.rank} color="bg-amber-100 text-amber-600" />
-                            <StatCard icon={<ClockIcon />} label="Esercizi Completati" value={userData.exerciseCount} color="bg-sky-100 text-sky-600" />
+                            <StatCard icon={<TrophyIcon />} label="Rank Attuale" value={userData.rank} color="bg-amber-100 text-amber-600" />
+                            <StatCard icon={<ClipboardListIcon className="h-8 w-8" />} label="Esercizi Completati" value={userData.exerciseCount} color="bg-sky-100 text-sky-600" />
+                            <StatCard icon={<ClockIcon />} label="Tempo di Pratica" value={formatPracticeTime(userData.practiceTime)} color="bg-green-100 text-green-600" />
                         </div>
                     </div>
 
+                    {nextRank && (
+                        <div className="mt-8 border-t pt-6">
+                            <div className="flex justify-between items-end mb-2">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-800">Prossimo Obiettivo: {nextRank.name}</h2>
+                                    <p className="text-sm text-gray-500">{pointsToNext} punti al livello successivo</p>
+                                </div>
+                                <span className="text-sky-600 font-bold">{Math.round(rankProgress)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3">
+                                <div className="bg-amber-500 h-3 rounded-full transition-all duration-500 ease-out" style={{ width: `${rankProgress}%` }}></div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="mt-8 border-t pt-6">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-4">Progresso Generale</h2>
+                        <h2 className="text-xl font-semibold text-gray-800 mb-4">Progresso Esercizi</h2>
                          <div className="w-full bg-gray-200 rounded-full h-4">
-                            <div className="bg-green-500 h-4 rounded-full text-center text-white text-xs font-bold" style={{ width: `${overallProgress}%` }}>
+                            <div className="bg-green-500 h-4 rounded-full text-center text-white text-xs font-bold transition-all duration-500 ease-out" style={{ width: `${overallProgress}%` }}>
                                 {overallProgress > 10 && `${overallProgress}%`}
                             </div>
                         </div>
                         <p className="text-sm text-gray-600 text-right mt-1">{totalCompleted} / {totalPossible} esercizi unici completati</p>
+                    </div>
+                    
+                    <div className="mt-8 border-t pt-6">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6">I tuoi Badge</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            {BADGES.map(badge => {
+                                const isUnlocked = badge.check(userData);
+                                return (
+                                    <div 
+                                        key={badge.id} 
+                                        className={`group relative flex flex-col items-center p-4 rounded-xl border transition-all duration-300 ${isUnlocked ? 'bg-white border-sky-100 shadow-sm hover:shadow-md' : 'bg-gray-50 border-gray-200 opacity-60'}`}
+                                    >
+                                        <div className={`mb-3 ${isUnlocked ? badge.iconColor : 'text-gray-400'}`}>
+                                            {isUnlocked ? (
+                                                badge.type === 'rank' ? <TrophyIcon className="h-10 w-10" /> : <MedalIcon className="h-10 w-10" />
+                                            ) : (
+                                                <LockClosedIcon className="h-8 w-8" />
+                                            )}
+                                        </div>
+                                        <h3 className={`text-sm font-bold text-center mb-1 ${isUnlocked ? 'text-gray-800' : 'text-gray-500'}`}>{badge.name}</h3>
+                                        {/* Tooltip on hover */}
+                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-gray-800 text-white text-xs rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
+                                            {badge.description}
+                                            {!isUnlocked && <span className="block mt-1 text-gray-400 font-style: italic">(Bloccato)</span>}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
 
                 </div>
