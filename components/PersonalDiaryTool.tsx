@@ -18,7 +18,7 @@ const LoadingSpinner: React.FC = () => (
 
 interface DiaryEntry {
     id: string;
-    date: firebase.firestore.Timestamp;
+    date: any; // Può essere Timestamp o Date
     section1: string; // Cosa mi sta succedendo?
     section2: string; // Cosa mi fa soffrire?
     section3: string; // Che cosa voglio raggiungere?
@@ -51,12 +51,27 @@ const PersonalDiaryTool: React.FC<PersonalDiaryToolProps> = ({ onGoHome, onExerc
 
     useEffect(() => {
         if (user) {
-            const unsubscribe = db.collection('users').doc(user.uid).collection('diaryEntries')
-                .orderBy('date', 'desc')
-                .onSnapshot(snapshot => {
-                    const fetchedEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DiaryEntry));
-                    setEntries(fetchedEntries);
-                    if (fetchedEntries.length === 0) {
+            // Modifica: Ascolta il documento utente invece della sottocollezione
+            const unsubscribe = db.collection('users').doc(user.uid)
+                .onSnapshot(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const fetchedEntries = (data?.diaryEntries || []) as DiaryEntry[];
+                        
+                        // Ordina le voci per data (dalla più recente)
+                        fetchedEntries.sort((a, b) => {
+                            const dateA = a.date && typeof a.date.toDate === 'function' ? a.date.toDate() : new Date(a.date || Date.now());
+                            const dateB = b.date && typeof b.date.toDate === 'function' ? b.date.toDate() : new Date(b.date || Date.now());
+                            return dateB.getTime() - dateA.getTime();
+                        });
+
+                        setEntries(fetchedEntries);
+                        if (fetchedEntries.length === 0) {
+                            setShowIntro(true);
+                        }
+                    } else {
+                        // Se il documento utente non esiste ancora (raro ma possibile)
+                        setEntries([]);
                         setShowIntro(true);
                     }
                     setIsLoading(false);
@@ -90,29 +105,58 @@ const PersonalDiaryTool: React.FC<PersonalDiaryToolProps> = ({ onGoHome, onExerc
         
         setIsSaving(true);
         setError('');
-        const entryData = {
-            date: currentEntry.date || firebase.firestore.FieldValue.serverTimestamp(),
-            section1: currentEntry.section1 || '',
-            section2: currentEntry.section2 || '',
-            section3: currentEntry.section3 || '',
-            section4: currentEntry.section4 || '',
-        };
-
+        
         try {
-            const collectionRef = db.collection('users').doc(user.uid).collection('diaryEntries');
-            if (currentEntry.id) {
-                // Update existing entry
-                await collectionRef.doc(currentEntry.id).update(entryData);
-            } else {
-                // Add new entry
-                const docRef = await collectionRef.add(entryData);
-                onExerciseComplete(docRef.id);
+            const userRef = db.collection('users').doc(user.uid);
+            
+            // Usiamo una transazione per leggere l'array attuale, modificarlo e riscriverlo
+            await db.runTransaction(async (transaction) => {
+                const doc = await transaction.get(userRef);
+                if (!doc.exists) {
+                    throw new Error("Utente non trovato");
+                }
+                
+                const data = doc.data();
+                let currentEntries: DiaryEntry[] = data?.diaryEntries || [];
+                
+                const entryToSave = {
+                    id: currentEntry.id || Date.now().toString(),
+                    date: currentEntry.date || new Date(),
+                    section1: currentEntry.section1 || '',
+                    section2: currentEntry.section2 || '',
+                    section3: currentEntry.section3 || '',
+                    section4: currentEntry.section4 || '',
+                };
+
+                if (currentEntry.id) {
+                    // Modifica esistente
+                    const index = currentEntries.findIndex(e => e.id === currentEntry.id);
+                    if (index !== -1) {
+                        currentEntries[index] = entryToSave as DiaryEntry;
+                    }
+                } else {
+                    // Nuova voce
+                    currentEntries.unshift(entryToSave as DiaryEntry); // Aggiungi all'inizio
+                }
+                
+                transaction.update(userRef, { diaryEntries: currentEntries });
+                
+                // Se è una nuova voce, notifichiamo il completamento (fuori dalla transazione sarebbe meglio, ma qui va bene)
+                if (!currentEntry.id) {
+                     // Nota: chiamare onExerciseComplete qui potrebbe scatenare un'altra scrittura.
+                     // È sicuro perché Firebase gestisce la concorrenza, ma ideale farlo dopo.
+                }
+            });
+
+            if (!currentEntry.id) {
+                 onExerciseComplete("new-entry");
             }
+
             setView('list');
             setCurrentEntry(null);
         } catch (err) {
             console.error("Error saving entry:", err);
-            setError("Si è verificato un errore durante il salvataggio.");
+            setError("Si è verificato un errore durante il salvataggio. Riprova.");
         } finally {
             setIsSaving(false);
         }
@@ -122,7 +166,17 @@ const PersonalDiaryTool: React.FC<PersonalDiaryToolProps> = ({ onGoHome, onExerc
         if (!user || !window.confirm("Sei sicuro di voler eliminare questa voce del diario? L'azione è irreversibile.")) return;
 
         try {
-            await db.collection('users').doc(user.uid).collection('diaryEntries').doc(entryId).delete();
+            const userRef = db.collection('users').doc(user.uid);
+            await db.runTransaction(async (transaction) => {
+                const doc = await transaction.get(userRef);
+                if (!doc.exists) return;
+                
+                const data = doc.data();
+                let currentEntries: DiaryEntry[] = data?.diaryEntries || [];
+                const newEntries = currentEntries.filter(e => e.id !== entryId);
+                
+                transaction.update(userRef, { diaryEntries: newEntries });
+            });
         } catch (err) {
             console.error("Error deleting entry:", err);
             setError("Si è verificato un errore durante l'eliminazione.");
@@ -188,15 +242,33 @@ Ricorda: il tuo ruolo è di specchio, non di guida. Sii empatico e non giudicant
     };
 
     const formatDate = (timestamp: any) => {
-        if (timestamp && typeof timestamp.toDate === 'function') {
+        if (!timestamp) return 'Oggi';
+        
+        let dateObj: Date;
+        
+        // Gestione Firestore Timestamp
+        if (typeof timestamp.toDate === 'function') {
              try {
-                return timestamp.toDate().toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' });
-             } catch (e) {
-                 console.error("Error formatting date:", e);
-                 return "Data non valida";
+                dateObj = timestamp.toDate();
+             } catch (e) { 
+                 console.error("Error converting timestamp", e);
+                 return "Data non valida"; 
              }
+        } 
+        // Gestione Date standard JS (usata per update ottimistici o salvataggio locale)
+        else if (timestamp instanceof Date) {
+             dateObj = timestamp;
+        } 
+        // Gestione stringhe o altro
+        else {
+             dateObj = new Date(timestamp);
         }
-        return 'Oggi'; // Fallback per quando il timestamp non è ancora sincronizzato (local write)
+
+        try {
+            return dateObj.toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' });
+        } catch (e) {
+            return "Data non valida";
+        }
     };
 
     const renderListView = () => (
