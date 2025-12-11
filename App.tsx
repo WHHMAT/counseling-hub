@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS, PNL_TOOLS, ROGERIAN_TOOLS, PLURALISTIC_TOOLS, TRANSACTIONAL_TOOLS } from './constants';
+import { PROFESSIONAL_TOOLS, PERSONAL_TOOLS, PNL_TOOLS, ROGERIAN_TOOLS, PLURALISTIC_TOOLS, TRANSACTIONAL_TOOLS, SYSTEMIC_TOOLS } from './constants';
 import ToolCard from './components/ToolCard';
 import RolePlayingTool from './components/RolePlayingTool';
 import RapportTool from './components/RapportTool';
@@ -17,6 +17,7 @@ import GordonMethodTool from './components/GordonMethodTool';
 import NlpMapTool from './components/NlpMapTool';
 import CounselingProcessTool from './components/CounselingProcessTool';
 import EgoStatesTool from './components/EgoStatesTool';
+import RelationalDiagramTool from './components/RelationalDiagramTool';
 import FeedbackForm from './components/FeedbackForm';
 import DonationPopup from './components/DonationPopup';
 import Header from './components/Header';
@@ -138,12 +139,13 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    const isProfessionalTool = PROFESSIONAL_TOOLS.some(tool => tool.id === activeView && tool.id !== 'nlp-hub' && tool.id !== 'rogerian-hub' && tool.id !== 'pluralistic-hub' && tool.id !== 'transactional-hub');
+    const isProfessionalTool = PROFESSIONAL_TOOLS.some(tool => tool.id === activeView && tool.id !== 'nlp-hub' && tool.id !== 'rogerian-hub' && tool.id !== 'pluralistic-hub' && tool.id !== 'transactional-hub' && tool.id !== 'systemic-relational');
     const isPersonalTool = PERSONAL_TOOLS.some(tool => tool.id === activeView);
     const isNlpTool = PNL_TOOLS.some(tool => tool.id === activeView);
     const isRogerianTool = ROGERIAN_TOOLS.some(tool => tool.id === activeView);
     const isPluralisticTool = PLURALISTIC_TOOLS.some(tool => tool.id === activeView);
     const isTransactionalTool = TRANSACTIONAL_TOOLS.some(tool => tool.id === activeView);
+    const isSystemicTool = SYSTEMIC_TOOLS.some(tool => tool.id === activeView);
 
     if (isNlpTool) {
         const onGoBack = () => setActiveView('nlp-hub');
@@ -170,6 +172,13 @@ const App: React.FC = () => {
         const onGoBack = () => setActiveView('transactional-hub');
         if (activeView === 'ego-states') {
             return <EgoStatesTool onGoHome={onGoBack} onExerciseComplete={(points, toolId, exId) => handleExerciseComplete(points, toolId, exId)} userData={userData} />;
+        }
+    }
+
+    if (isSystemicTool) {
+        const onGoBack = () => setActiveView('systemic-relational');
+        if (activeView === 'relational-diagram') {
+            return <RelationalDiagramTool onGoHome={onGoBack} onExerciseComplete={(points, toolId, exId) => handleExerciseComplete(points, toolId, exId)} />;
         }
     }
 
@@ -271,6 +280,30 @@ const App: React.FC = () => {
                 </header>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {TRANSACTIONAL_TOOLS.map((tool) => (
+                        <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
+                    ))}
+                </div>
+            </main>
+        );
+    }
+
+    if (activeView === 'systemic-relational') {
+        return (
+            <main className="container mx-auto px-4 pt-20 pb-12 sm:py-20">
+                <button onClick={() => setActiveView('professional-hub')} className="flex items-center gap-2 text-sky-600 hover:text-sky-800 font-semibold mb-8 transition-colors">
+                    <ArrowLeftIcon />
+                    Torna agli Strumenti Professionali
+                </button>
+                <header className="text-center mb-16">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+                        Approccio Sistemico Relazionale
+                    </h1>
+                    <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+                        Strumenti per visualizzare e comprendere le connessioni, i legami e le dinamiche familiari.
+                    </p>
+                </header>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {SYSTEMIC_TOOLS.map((tool) => (
                         <ToolCard key={tool.id} tool={tool} onStart={handleStartView} />
                     ))}
                 </div>

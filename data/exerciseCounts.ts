@@ -18,4 +18,5 @@ export const EXERCISE_COUNTS: Record<string, number> = {
   'personal-diary': 50,
   'nlp-client-map': 3,
   'ego-states': 5,
+  'relational-diagram': 1,
 };

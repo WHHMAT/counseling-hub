@@ -107,6 +107,14 @@ export const BADGES: Badge[] = [
         iconColor: 'text-indigo-600',
         check: (data) => getCompletedCount(data, 'ego-states') >= 5
     },
+    {
+        id: 'architetto-sistemico',
+        name: 'Architetto di Sistemi',
+        description: 'Crea e salva il tuo primo Diagramma Relazionale.',
+        type: 'achievement',
+        iconColor: 'text-cyan-600',
+        check: (data) => getCompletedCount(data, 'relational-diagram') >= 1
+    },
     
     // --- HUB MASTERY (Badge Speciali per Aree) ---
     {

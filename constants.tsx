@@ -1,7 +1,7 @@
 
 import React from 'react';
 import type { Tool } from './types';
-import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon, PencilAltIcon, HandshakeIcon, MapIcon, BrainIcon, UserCircleIcon, ChatBubbleLeftRightIcon, GestaltIcon, SparklesIcon, ClockIcon, BriefcaseIcon, UserIcon } from './components/icons';
+import { UsersIcon, ClipboardListIcon, QuestionMarkCircleIcon, BookOpenIcon, LinkIcon, PyramidIcon, TargetIcon, ClipboardCheckIcon, ScaleIcon, GridIcon, LightBulbIcon, WheelIcon, PencilAltIcon, HandshakeIcon, MapIcon, BrainIcon, UserCircleIcon, ChatBubbleLeftRightIcon, GestaltIcon, SparklesIcon, ClockIcon, BriefcaseIcon, UserIcon, GridIcon as GridIconOutline } from './components/icons';
 
 export const PNL_TOOLS: Tool[] = [
   {
@@ -54,6 +54,16 @@ export const TRANSACTIONAL_TOOLS: Tool[] = [
     }
 ];
 
+export const SYSTEMIC_TOOLS: Tool[] = [
+    {
+        id: 'relational-diagram',
+        title: 'Diagramma Relazionale',
+        description: "Disegna un genogramma interattivo. Mappa le persone e le connessioni (forti, conflittuali, ecc.) per visualizzare le dinamiche del sistema.",
+        icon: <GridIconOutline />, // Reusing GridIcon as placeholder for network/diagram
+        actionText: 'Crea Diagramma',
+    }
+];
+
 export const PROFESSIONAL_TOOLS: Tool[] = [
   {
     id: 'rogerian-hub',
@@ -99,7 +109,7 @@ export const PROFESSIONAL_TOOLS: Tool[] = [
     description: 'Esplora le dinamiche relazionali e familiari. Allenati su strumenti come il genogramma e le domande circolari per comprendere i sistemi in cui vive il cliente.',
     icon: <UsersIcon />,
     actionText: 'Esplora Strumenti',
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: 'brief-counseling',
