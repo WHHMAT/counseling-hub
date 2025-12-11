@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { db } from '../firebase';
@@ -186,6 +187,18 @@ Ricorda: il tuo ruolo è di specchio, non di guida. Sii empatico e non giudicant
         });
     };
 
+    const formatDate = (timestamp: any) => {
+        if (timestamp && typeof timestamp.toDate === 'function') {
+             try {
+                return timestamp.toDate().toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' });
+             } catch (e) {
+                 console.error("Error formatting date:", e);
+                 return "Data non valida";
+             }
+        }
+        return 'Oggi'; // Fallback per quando il timestamp non è ancora sincronizzato (local write)
+    };
+
     const renderListView = () => (
         <>
             <div className="flex justify-between items-center mb-6">
@@ -226,7 +239,7 @@ Ricorda: il tuo ruolo è di specchio, non di guida. Sii empatico e non giudicant
                     {entries.length > 0 ? entries.map(entry => (
                         <div key={entry.id} className="bg-white p-4 rounded-lg shadow-sm border flex justify-between items-start">
                            <div>
-                                <p className="font-bold text-lg text-gray-800">{entry.date.toDate().toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                <p className="font-bold text-lg text-gray-800">{formatDate(entry.date)}</p>
                                 <p className="text-gray-600 mt-1 italic">"{entry.section1.substring(0, 80)}{entry.section1.length > 80 ? '...' : ''}"</p>
                            </div>
                            <div className="flex space-x-2 flex-shrink-0 ml-4">
